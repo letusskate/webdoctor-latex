@@ -1,0 +1,151 @@
+{
+    //vscode 自动换行
+    "editor.wordWrap": "on",
+    
+    //大屏显示器设置  
+    "editor.fontSize": 18,
+    "editor.guides.indentation": false,
+    "editor.renderLineHighlight": "none",
+    "editor.cursorBlinking": "smooth",
+    "editor.cursorSmoothCaretAnimation": "off",
+
+    // // SumatraPDF setting
+    // "latex-workshop.view.pdf.viewer": "external", //将外部PDF设为默认
+    // "latex-workshop.view.pdf.ref.viewer":"external", //外部PDF设置
+    // "latex-workshop.view.pdf.external.viewer.command": "C:/Program Files/SumatraPDF/SumatraPDF.exe",
+    // "latex-workshop.view.pdf.external.viewer.args": [
+    // "-forward-search",
+    // "%TEX%",
+    // "%LINE%",
+    // "-reuse-instance",
+    // "%PDF%"
+    // ],
+    // "latex-workshop.view.pdf.external.synctex.command":"C:/Program Files/SumatraPDF/SumatraPDF.exe", //定位
+    // "latex-workshop.view.pdf.external.synctex.args":[
+    // "-forward-search",
+    // "%TEX%",
+    // "%LINE%",
+    // "-reuse-instance",
+    // "%PDF%"
+    // ],
+
+    // grammar English grammar check
+    "ltex.enabled": true, 
+    "ltex.language": "en-US",
+
+    // search setting
+    "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "*.svg":true,
+    "*.cls": true,
+    "template/**": true,
+    "*.bst": true,
+    ".git/**": true,
+    "69a67b401c1065a16437765a/**":true, //同步到overleaf的库
+    "dyxtex/**":true, //dyx
+    },
+    // 排除gitignore的文件
+    // "explorer.excludeGitIgnore": true,
+
+    // ...TODO-tree setting
+    "todo-tree.regex.regex": "(%|//|#|<!--|;|//*|^|^[ /t]*(-|/d+.))/s*($TAGS)",
+    
+    // latex-workshop setting
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.showContextMenu": true,
+    "latex-workshop.intellisense.package.enabled": true,
+    "latex-workshop.message.error.show": false,
+    "latex-workshop.message.warning.show": false,
+    "latex-workshop.latex.tools": [
+        {
+            "name": "latexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-pdf",
+                "-outdir=%OUTDIR%",
+                "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "pdflatex",
+            "command": "pdflatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-shell-escape",  // svg shell ecscape or write18
+                "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "bibtex",
+            "command": "bibtex",
+            "args": [
+                "%DOCFILE%"
+            ]
+        },
+    ],
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "LaTeXmk",
+            "tools": [
+                "latexmk"
+            ]
+        },
+        {
+            "name": "pdflatex",
+            "tools": [
+                "pdflatex"
+            ]
+        },
+        {
+            "name": "pdf->bib->pdf->pdf",
+            "tools": [
+                "pdflatex",
+                "bibtex",
+                "pdflatex",
+                "pdflatex"
+            ]
+        },
+    ],
+    "latex-workshop.latex.clean.fileTypes": [
+        "*.aux",
+        "*.bbl",
+        "*.blg",
+        "*.idx",
+        "*.ind",
+        "*.lof",
+        "*.lot",
+        "*.out",
+        "*.toc",
+        "*.acn",
+        "*.acr",
+        "*.alg",
+        "*.glg",
+        "*.glo",
+        "*.gls",
+        "*.ist",
+        "*.fls",
+        "*.log",
+        "*.fdb_latexmk",
+        // below is wyb manually added and found it useless. manually delete bbl and synctex.gz is a must.
+        "*.bbl",
+        "*.synctex.gz"
+    ],
+    "latex-workshop.latex.autoClean.run": "onFailed",
+    "latex-workshop.latex.recipe.default": "lastUsed",
+    "latex-workshop.view.pdf.internal.synctex.keybinding": "double-click",
+    "latex-workshop.linting.chktex.exec.args": [
+        "-wall",
+        "-n22",
+        "-n30",
+        "-e16",
+        "-q",
+    ],
+
+}

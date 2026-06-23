@@ -1,0 +1,73 @@
+% !TeX root = ../main.tex
+\section{Appendix}
+
+This appendix provides the complete pseudocode of the CAG-CoreSet algorithm and the formal proofs referenced in Design~III (Section~3.3).
+
+\subsection{CAG-CoreSet Pseudocode}
+
+\begin{algorithm}[H]
+\caption{Cost-Aware Greedy CoreSet (CAG-CoreSet)}
+\begin{algorithmic}[1]
+\REQUIRE Full data set $V$, user query $Q$, cost budget $C_{\max}$, quality threshold $\epsilon$, cost coefficients $\alpha, \beta$
+\ENSURE Selected subset $S$
+
+\STATE $n \leftarrow |V|$
+\STATE Compute $k_{\max}$ via binary search such that $C_{\text{total}}(k_{\max}) \leq C_{\max}$
+\STATE $S \leftarrow \emptyset$
+\STATE $f_{\text{full}} \leftarrow f(V, Q)$
+
+\FOR{$i = 1$ \TO $k_{\max}$}
+    \STATE $\text{max\_gain} \leftarrow 0$
+    \STATE $v^* \leftarrow \text{None}$
+    
+    \FORALL{$v \in V \setminus S$}
+        \STATE $\text{gain} \leftarrow f(S \cup \{v\}, Q) - f(S, Q)$
+        \IF{$\text{gain} > \text{max\_gain}$}
+            \STATE $\text{max\_gain} \leftarrow \text{gain}$
+            \STATE $v^* \leftarrow v$
+        \ENDIF
+    \ENDFOR
+    
+    \IF{$v^* \neq \text{None}$}
+        \STATE $S \leftarrow S \cup \{v^*\}$
+    \ENDIF
+    
+    \IF{$f(S, Q) \geq f_{\text{full}} - \epsilon$}
+        \STATE \textbf{break}
+    \ENDIF
+\ENDFOR
+
+\RETURN $S$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Proofs}
+
+\begin{property}[Strict Monotonicity of Total Cost]
+$C_{\text{total}}(k)$ is a strictly increasing function of $k$.
+\end{property}
+\begin{proof}
+For any $k \geq 1$:
+\[
+C_{\text{total}}(k) - C_{\text{total}}(k-1) = C_{k-1} = (n - k + 1)(\alpha \cdot k + \beta) > 0
+\]
+since all parameters $\alpha, \beta, n, k$ are positive.
+\end{proof}
+
+\begin{theorem}[Approximation Guarantee]
+For a monotonic and submodular quality function $f(S, Q)$, the CAG-CoreSet algorithm outputs a subset $S$ such that:
+\[
+f(S) \geq \left(1 - \frac{1}{e}\right) f(S_{\text{opt}})
+\]
+where $S_{\text{opt}}$ is the optimal subset of size at most $k_{\max}$.
+\end{theorem}
+\begin{proof}
+This is a classic result for the greedy algorithm applied to cardinality-constrained monotone submodular maximization. The approximation ratio $(1 - 1/e) \approx 0.632$ is tight for this problem class.
+\end{proof}
+
+Additionally, if the early stopping condition is triggered, we have:
+\[
+f(S) \geq f(V, Q) - \epsilon \quad \text{and} \quad C_{\text{total}}(|S|) \leq C_{\max}
+\]
+guaranteeing both quality and cost constraints are satisfied.
+

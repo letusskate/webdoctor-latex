@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        // Add your extension recommendations here
+        "znck.grammarly",
+        "james-yu.latex-workshop",
+        "mathematic.vscode-latex",
+        "tecosaur.latex-utilities",
+        "iamhyc.overleaf-workshop",
+        
+    ],
+    // "unwantedRecommendations": [
+    //     // Add any unwanted extension recommendations here
+    //     "vscodevim.vim",
+    // ]
+}
