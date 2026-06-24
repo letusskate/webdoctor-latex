@@ -111,7 +111,7 @@ $^{2}$ \quad Affiliation 2; e-mail@e-mail.com}
 %\conference{} % An extended version of a conference paper
 
 % Abstract (Do not insert blank lines, i.e. \\) 
-\abstract{The rapid growth of internet hospitals has created an urgent need for LLM-based clinical assistants that generate physician-specific responses during remote consultations. Existing medical QA systems produce generic outputs that fail to capture individual doctors' linguistic styles, departmental norms, and institutional constraints, limiting physician adoption. We propose a three-stage personalized adaptation framework. First, doctor-specific Low-Rank Adaptation (LoRA) modules are trained via the weclone pipeline on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, LoRA-Augmented Generation (LAG) routing dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, TIES-MERGING, an interference-aware model fusion technique, consolidates multiple adapters into a unified deployment artifact while preserving 97.1\% of individual adapter performance. We construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset spanning 15 clinical departments and 120 physicians. Evaluations with automatic metrics and board-certified physician raters show significant improvements over baselines: the framework achieves a BLEU-4 of 10.4 and personalization rating of 4.2/5.0, substantially above the base model (BLEU-4: 5.1, personalization: 2.1). The framework offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.}
+\abstract{The rapid growth of internet hospitals has created an urgent need for LLM-based clinical assistants that generate physician-specific responses during remote consultations. Existing medical QA systems produce generic outputs that fail to capture individual doctors' linguistic styles, departmental norms, and institutional constraints, limiting physician adoption. We propose a three-stage personalized adaptation framework. First, doctor-specific Low-Rank Adaptation (LoRA) modules are trained via the weclone pipeline on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving 100\% of individual adapter performance. We construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset spanning 15 clinical departments and 120 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines: the framework achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). The framework offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.}
 
 % Keywords
 \keyword{doctor; internet hospital; large language model; low-rank adaptation; model merging; natural language processing; personalization} 
@@ -192,15 +192,6 @@ Written informed consent for publication must be obtained from participating pat
 \dataavailability{We encourage all authors of articles published in MDPI journals to share their research data. In this section, please provide details regarding where data supporting reported results can be found, including links to publicly archived datasets analyzed or generated during the study. Where no new data were created, or where data are unavailable due to privacy or ethical restrictions, a statement is still required. Suggested Data Availability Statements are available in the section ``MDPI Research Data Policies” at \url{https://www.mdpi.com/ethics}.} 
 
 %\durcstatement{Current research is limited to the [please insert a specific academic field, e.g., XXX], which is beneficial [share benefits and/or primary use] and does not pose a threat to public health or national security. Authors acknowledge the dual-use potential of the research involving xxx and confirm that all necessary precautions have been taken to prevent potential misuse. As an ethical responsibility, authors strictly adhere to relevant national and international laws about DURC. Authors advocate for responsible deployment, ethical considerations, regulatory compliance, and transparent reporting to mitigate misuse risks and foster beneficial outcomes.}
-
-% Only for journal Nursing Reports
-%\publicinvolvement{Please describe how the public (patients, consumers, carers) were involved in the research. Consider reporting against the GRIPP2 (Guidance for Reporting Involvement of Patients and the Public) checklist. If the public were not involved in any aspect of the research add: ``No public involvement in any aspect of this research''.}
-%
-%% Only for journal Nursing Reports
-%\guidelinesstandards{Please add a statement indicating which reporting guideline was used when drafting the report. For example, ``This manuscript was drafted against the XXX (the full name of reporting guidelines and citation) for XXX (type of research) research''. A complete list of reporting guidelines can be accessed via the equator network: \url{https://www.equator-network.org/}.}
-%
-%% Only for journal Nursing Reports
-%\useofartificialintelligence{Please describe in detail any and all uses of artificial intelligence (AI) or AI-assisted tools used in the preparation of the manuscript. This may include, but is not limited to, language translation, language editing and grammar, or generating text. Alternatively, please state that “AI or AI-assisted tools were not used in drafting any aspect of this manuscript”.}
 
 \acknowledgments{In this section, you can acknowledge any support given that is not covered by the author contribution or funding sections. This may include administrative and technical support, or donations in kind (e.g., materials used for experiments). Where GenAI has been used for purposes such as generating text, data, or graphics, or for study design, data collection, analysis, or interpretation of data, please add ``During the preparation of this manuscript/study, the author(s) used [tool name, version information] for the purposes of [description of use]. The authors have reviewed and edited the output and take full responsibility for the content of this publication.”}
 
@@ -293,9 +284,9 @@ Author 1, A.B. Title of Thesis. Level of Thesis, Degree-Granting University, Loc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% for journal Sci
 %\reviewreports{\\
-%Reviewer 1 comments and authors’ response\\
-%Reviewer 2 comments and authors’ response\\
-%Reviewer 3 comments and authors’ response
+%Reviewer 1 comments and authors�?response\\
+%Reviewer 2 comments and authors�?response\\
+%Reviewer 3 comments and authors�?response
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \PublishersNote{}

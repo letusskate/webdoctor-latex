@@ -2,7 +2,7 @@
 
 \section{Method}\label{section:design}
 
-In this section, we present our three-stage personalized adaptation framework. We begin with a formal problem formulation, then describe each component in detail: doctor-specific LoRA training via weclone, LoRA-Augmented Generation (LAG) for dynamic adapter routing, and TIES-MERGING for parameter fusion.
+In this section, we present our three-stage personalized adaptation framework. We begin with a formal problem formulation, then describe each component in detail: doctor-specific LoRA training via weclone, Doctor-Adaptive Routing (DAR) for dynamic adapter routing, and SCF for parameter fusion.
 
 \subsection{Problem Formulation}
 
@@ -34,13 +34,13 @@ We leverage the \textbf{weclone} training pipeline~\cite{weclone} for orchestrat
 
 To prevent overfitting given the limited per-physician data, we apply the following regularization strategies: (1) a small LoRA rank $r \in \{4, 8, 16\}$; (2) dropout on the LoRA matrices with rate $\alpha = 0.1$; and (3) early stopping based on validation perplexity on a held-out subset of each physician's dialogues. Each trained adapter $\Delta \Theta_k$ is serialized to disk as a compact checkpoint (typically $<10$ MB), enabling efficient storage and loading.
 
-\subsection{LoRA-Augmented Generation (LAG) Routing}
+\subsection{Doctor-Adaptive Routing (DAR) Routing}
 
-At inference time, the system must select the appropriate LoRA adapter for the target physician. We implement a LoRA-Augmented Generation (LAG) router~\cite{lag2024} that operates in two modes:
+At inference time, the system must select the appropriate LoRA adapter for the target physician. We implement a Doctor-Adaptive Routing (DAR) router~\cite{lag2024} that operates in two modes:
 
 \textbf{Identity-Based Routing.} When the target physician $d_k$ is known (the standard internet hospital scenario where a patient consults a specific doctor), the router directly loads the corresponding adapter $\Delta \Theta_k$ and merges it with the base model for generation.
 
-\textbf{Query-Based Routing.} In scenarios where the optimal physician is not predetermined (e.g., triage or automated preliminary response), the LAG router selects the most appropriate adapter from the candidate set $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$ based on query-adapter relevance. We encode the patient query $q$ and a representative summary of each physician's style using a sentence encoder $E(\cdot)$, and compute cosine similarity:
+\textbf{Query-Based Routing.} In scenarios where the optimal physician is not predetermined (e.g., triage or automated preliminary response), the DAR router selects the most appropriate adapter from the candidate set $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$ based on query-adapter relevance. We encode the patient query $q$ and a representative summary of each physician's style using a sentence encoder $E(\cdot)$, and compute cosine similarity:
 \begin{equation}
 k^* = \arg\max_{k} \; \cos\big(E(q),\; E(s_k)\big),
 \end{equation}
@@ -48,9 +48,9 @@ where $s_k$ is a textual description of physician $d_k$'s specialty, department,
 
 The selected adapter $\Delta \Theta_{k^*}$ is then applied to the base model, and generation proceeds autoregressively. The routing overhead is negligible ($<5$ ms per query) as it involves only a single forward pass through a lightweight encoder followed by a dot-product similarity computation.
 
-\subsection{TIES-MERGING for Parameter Fusion}
+\subsection{SCF for Parameter Fusion}
 
-While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. TIES-MERGING~\cite{yadav2024ties} enables us to fuse multiple adapters into a single merged artifact while minimizing interference. The algorithm proceeds in three stages:
+While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF~\cite{yadav2024ties} enables us to fuse multiple adapters into a single merged artifact while minimizing interference. The algorithm proceeds in three stages:
 
 \textbf{Stage 1: TRIM.} For each parameter in the set of LoRA adapters $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$, we retain only the top-$\tau$ fraction of values by magnitude. This removes small, potentially noisy updates:
 \begin{equation}

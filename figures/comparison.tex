@@ -27,7 +27,7 @@
 \node[yes, below=0.3cm of o3] (o4) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Multi-LoRA adapter parallel deployment};
 
 \node[no, below=0.3cm of g4] (g5) {\textcolor{red!70!black}{\large\textbf{X}}~~Cannot capture individual style};
-\node[yes, below=0.3cm of o4] (o5) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~TIES-MERGING for efficient fusion};
+\node[yes, below=0.3cm of o4] (o5) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~SCF for efficient fusion};
 
 \node[no, below=0.3cm of g5] (g6) {\textcolor{red!70!black}{\large\textbf{X}}~~Output misaligned with doctor habits};
 \node[yes, below=0.3cm of o5] (o6) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Personalized response fits clinical practice};
@@ -40,6 +40,6 @@
 \draw[arrow, blue!50, line width=1.5pt] (o-footer.north) -- (o6.south);
 
 \end{tikzpicture}
-\caption{Comparison between our personalized framework and general medical QA AI systems. General-purpose systems employ a single shared model lacking physician-specific adaptation, whereas our framework achieves per-doctor, per-department personalization through LoRA training, LAG routing, and TIES-MERGING, producing responses closely aligned with individual physicians' clinical communication styles.}
+\caption{Comparison between our personalized framework and general medical QA AI systems. General-purpose systems employ a single shared model lacking physician-specific adaptation, whereas our framework achieves per-doctor, per-department personalization through LoRA training, DAR routing, and SCF, producing responses closely aligned with individual physicians' clinical communication styles.}
 \label{fig:comparison}
 \end{figure}
