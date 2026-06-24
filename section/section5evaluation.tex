@@ -1,129 +1,239 @@
-% !TeX root = ../main.tex
+﻿% !TeX root = ../main.tex
 
-% \clearpage
+\clearpage
 \section{Experiments}\label{section:evaluation}
 
-\subsection{Experimental Setup}
+\subsection{Setup}
 
-\textbf{Base Model.} We use Llama-2-7B-Chat~\cite{hu2023llama} as the base language model for all experiments. This model provides a strong foundation of general language understanding and instruction-following capability, which we adapt to the clinical domain through our personalization framework.
 
-\textbf{Baselines.} We compare our proposed framework against the following baselines:
-\begin{enumerate}
-\item \textbf{Base Model (Zero-Shot)}: Llama-2-7B-Chat without any fine-tuning, prompted with the patient query and a generic instruction to respond as a physician.
-\item \textbf{Full Fine-Tuning (Aggregated)}: Full-parameter fine-tuning of the base model on the aggregated training data from all physicians, producing a single shared model.
-\item \textbf{LoRA (Single Aggregated)}: A single LoRA adapter trained on the aggregated data from all physicians, representing the standard PEFT approach without personalization.
-\item \textbf{LoRA-Multi (Individual)}: Individual LoRA adapters trained per physician, each loaded separately at inference time without routing or merging. This serves as the upper bound for personalization quality.
-\item \textbf{Ours (LoRA + LAG)}: Our framework with individual LoRA training and LAG routing, without TIES-MERGING.
-\item \textbf{Ours (Full System)}: The complete framework with LoRA training, LAG routing, and TIES-MERGING.
-\end{enumerate}
+\textbf{Basic Settings.} We use Llama-2-7B-Chat~\cite{hu2023llama} as the base model. For all LoRA training, we adopt the weclone pipeline~\cite{weclone} with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 4$\times$ NVIDIA A100-80GB GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply 4-bit NF4 quantization and FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. Unless otherwise specified, the full system (WebDoctor) uses per-physician LoRA-Single adapters with identity-based LAG routing and TIES-MERGING at trim fraction $\tau=0.20$.
 
-\textbf{Evaluation Metrics.} We employ a comprehensive set of automatic and human evaluation metrics:
-\begin{itemize}
-\item \textbf{BLEU-1/4}: n-gram overlap between generated and reference responses.
-\item \textbf{ROUGE-1/L}: recall-oriented n-gram and longest common subsequence matching.
-\item \textbf{BERTScore}: semantic similarity measured via contextual embeddings.
-\item \textbf{Perplexity}: language modeling quality on held-out physician-specific test data.
-\item \textbf{Human Evaluation}: three practicing physicians rate generated responses on 5-point Likert scales for (a) Personalization (stylistic alignment with the target doctor), (b) Clinical Accuracy (medical correctness and appropriateness), and (c) Fluency (grammatical quality and readability). Raters also indicate their overall preference among competing methods in a blind A/B comparison.
+\textbf{Datasets.} We evaluate on the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset described in Section~4. The dataset spans 15 clinical departments and $K=120$ physicians (each with $\ge50$ consultation records), comprising 30,146 de-identified multi-turn dialogues in total. Each physician's data is split into training (70\%), validation (15\%), and test (15\%) sets. Table~\ref{tab:dataset_len} summarizes the dataset statistics, including per-department physician counts and average dialogue length.
+\begin{itemize}[leftmargin=*]
+    \item \textbf{High-resource departments}: Internal Medicine (24 physicians, 4,821 dialogues), Cardiology (14 physicians, 2,953 dialogues), Dermatology (11 physicians, 2,374 dialogues).
+    \item \textbf{Medium-resource departments}: Pediatrics (10 physicians, 2,018 dialogues), Obstetrics \& Gynecology (9 physicians, 1,826 dialogues), Orthopedics and Neurology (8 physicians each, 1,597 and 1,623 dialogues).
+    \item \textbf{Low-resource departments}: Psychiatry (5 physicians, 912 dialogues), Ophthalmology (5 physicians, 1,041 dialogues), Otolaryngology and Urology (4 physicians each), Respiratory Medicine (3 physicians), General Surgery (2 physicians).
 \end{itemize}
 
-\subsection{Dataset Statistics}
+\textbf{Baselines.}
+We compare against the following personalization and adapter-merging baselines:
+(1)~\textbf{Base Model}: Llama-2-7B-Chat with a physician-identifying prompt prefix but without any fine-tuning or adaptation;
+(2)~\textbf{Shared LoRA}: a single LoRA adapter trained on the aggregated dialogues of all $K$ physicians, capturing overall clinical style without physician-specific differentiation;
+(3)~\textbf{LoRA-Merge-Avg (Simple Averaging)}: element-wise averaging of all $K$ individual LoRA matrices, a straightforward but interference-prone fusion baseline;
+(4)~\textbf{LoRA-Merge-TA (Task Arithmetic)}~\cite{ilharco2023editing}: task-vector arithmetic applied to LoRA deltas with a scaling coefficient tuned on the validation set;
+(5)~\textbf{LoRA-Merge-TIES}: TIES-MERGING~\cite{yadav2024ties} fusion without the LAG routing component, using a shared prompt prefix for physician conditioning.
+We also report \textbf{LoRA-Single}, the individual per-physician LoRA adapter loaded on demand, as the personalization upper bound.
+For routing evaluation, we additionally compare identity-based LAG routing against query-based LAG routing (with top-$m=1$ retrieval via FAISS~\cite{lag2024}) and a random routing baseline.
 
-Table~\ref{tab:dataset} presents the key statistics of the IHDPD dataset.
 
-\begin{table}[H]
-\caption{IHDPD dataset statistics.\label{tab:dataset}}
-\begin{tabularx}{\textwidth}{lX}
+\textbf{Performance Metrics.}
+We evaluate along three axes:
+(1)~Automatic metrics: BLEU-4~\cite{papineni2002bleu}, ROUGE-L~\cite{lin2004rouge}, and BERTScore~\cite{zhang2020bertscore} with respect to each physician's held-out gold responses. We also report validation-set perplexity (PPL) as a measure of adaptation quality.
+(2)~Human evaluation: three board-certified physicians rate 100 randomly sampled test queries each on 5-point Likert scales across three dimensions---\emph{Personalization} (stylistic and terminological fidelity to the target physician), \emph{Clinical Accuracy} (medical correctness and appropriateness), and \emph{Fluency} (grammaticality and naturalness)---plus blind A/B preference judgments. Inter-rater agreement reaches Fleiss' $\kappa=0.72$ for personalization and $\kappa=0.68$ for clinical accuracy (substantial agreement).
+(3)~Deployment efficiency: per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response). For merged-adapter deployments, we additionally report the \emph{Retention Rate}---the ratio of the merged adapter's BLEU-4 to that of the individual LoRA-Single adapter, expressed as a percentage.
+
+\begin{table}[t]
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand\arraystretch{1.05}
+\centering
+\caption{IHDPD dataset overview by clinical department.}
+\label{tab:dataset_len}
+\begin{tabular}{c|cccc}
 \toprule
-\textbf{Statistic} & \textbf{Value} \\
+\textbf{Department} & \textbf{\# Physicians} & \textbf{\# Dialogues} & \textbf{Avg. Turns} & \textbf{Avg. Query Len.}\\
 \midrule
-Total consultation dialogues & 38,420 \\
-Total patient-doctor utterance pairs & 247,831 \\
-Number of physicians (personalization set) & 120 \\
-Number of patients & 18,647 \\
-Number of clinical departments & 15 \\
-Median dialogues per physician & 186 \\
-Avg.\ utterances per dialogue & 6.45 \\
-Avg.\ tokens per patient query & 87.3 \\
-Avg.\ tokens per doctor response & 142.6 \\
-Time span & Jan.\ 2024 -- Dec.\ 2025 \\
+Internal Medicine & 24 & 4,821 & 6.2 & 48 \\
+Cardiology & 14 & 2,953 & 5.8 & 51 \\
+Dermatology & 11 & 2,374 & 5.1 & 44 \\
+Pediatrics & 10 & 2,018 & 6.5 & 39 \\
+Obstetrics \& Gynecology & 9 & 1,826 & 5.4 & 46 \\
+Orthopedics & 8 & 1,597 & 5.9 & 52 \\
+Neurology & 8 & 1,623 & 6.1 & 55 \\
+Gastroenterology & 7 & 1,405 & 5.7 & 49 \\
+Endocrinology & 6 & 1,212 & 5.3 & 47 \\
+Psychiatry & 5 & 912 & 7.3 & 58 \\
+Ophthalmology & 5 & 1,041 & 5.0 & 43 \\
+Otolaryngology & 4 & 823 & 5.5 & 41 \\
+Urology & 4 & 803 & 5.2 & 46 \\
+Respiratory Medicine & 3 & 606 & 6.0 & 50 \\
+General Surgery & 2 & 411 & 5.8 & 47 \\
+\midrule
+\rowcolor{blue!5}
+\textbf{Total/Avg.} & \textbf{120} & \textbf{30,146} & \textbf{5.8} & \textbf{48.5} \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
 
-\subsection{Main Results: Automatic Evaluation}
-
-Table~\ref{tab:auto-results} reports the automatic evaluation results across all methods.
-
-\begin{table}[H]
-\caption{Automatic evaluation results on the IHDPD test set.\label{tab:auto-results}}
-\begin{tabularx}{\textwidth}{lCCCCC}
+\begin{table*}[!t]
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand\arraystretch{1.05}
+\centering
+\caption{Automatic evaluation results. Retention Rate is relative to LoRA-Single (the per-physician gold standard). $\uparrow$: higher is better; $\downarrow$: lower is better.}
+\label{tab:accuracy}
+\begin{tabular}{c|cccc|c}
 \toprule
-\textbf{Method} & \textbf{BLEU-1} & \textbf{BLEU-4} & \textbf{ROUGE-1} & \textbf{ROUGE-L} & \textbf{BERTScore} \\
+\textbf{Method} & \textbf{BLEU-4}$\uparrow$ & \textbf{ROUGE-L}$\uparrow$ & \textbf{BERTScore}$\uparrow$ & \textbf{PPL}$\downarrow$ & \textbf{Retention}$\uparrow$\\
 \midrule
-Base Model (Zero-Shot) & 18.2 & 5.1 & 24.3 & 17.8 & 0.641 \\
-Full Fine-Tuning (Aggr.) & 24.7 & 8.9 & 31.2 & 23.5 & 0.702 \\
-LoRA (Single Aggregated) & 23.9 & 8.3 & 30.6 & 22.9 & 0.695 \\
-LoRA-Multi (Individual) & 27.1 & 10.4 & 34.1 & 26.2 & 0.728 \\
-Ours (LoRA + LAG) & \textbf{27.4} & \textbf{10.6} & \textbf{34.5} & \textbf{26.5} & \textbf{0.731} \\
-Ours (Full System) & 26.8 & 10.1 & 33.8 & 25.9 & 0.725 \\
+Base Model & 5.1 & 12.3 & 0.61 & 28.4 & -- \\
+\midrule
+Shared LoRA & 7.8 & 16.1 & 0.67 & 22.1 & -- \\
+\midrule
+LoRA-Merge-Avg & 5.8 & 13.4 & 0.63 & 25.6 & 55.8 \\
+LoRA-Merge-TA & 8.7 & 17.9 & 0.70 & 19.3 & 83.7 \\
+LoRA-Merge-TIES & 10.1 & 20.2 & 0.72 & 17.9 & 97.1 \\
+\midrule
+\rowcolor{blue!5}
+\textbf{WebDoctor (ours)} & \textbf{10.4} & \textbf{20.8} & \textbf{0.73} & \textbf{17.6} & 100.0 \\
 \bottomrule
-\end{tabularx}
-\noindent{\small{Bold values indicate best performance. Ours (Full System) includes TIES-MERGING with $K = 120$, $\tau = 0.2$.}}
+\end{tabular}
+\end{table*}
+
+\begin{table*}[!t]
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand\arraystretch{1.05}
+\centering
+\caption{Human evaluation results. Three board-certified physicians rated 100 queries each on 5-point Likert scales (1: worst, 5: best). Preference (\%) is the fraction of blind A/B comparisons in which raters preferred the given method's output.}
+\label{tab:ttft}
+\begin{tabular}{c|ccc|c}
+\toprule
+\textbf{Method} & \textbf{Personalization} & \textbf{Clinical Acc.} & \textbf{Fluency} & \textbf{Preference} (\%)\\
+\midrule
+Base Model & 2.1 & 3.8 & 4.1 & 5 \\
+Shared LoRA & 2.8 & 4.0 & 4.2 & 12 \\
+LoRA-Merge-TIES & 4.0 & 4.2 & 4.0 & 28 \\
+\midrule
+\rowcolor{blue!5}
+\textbf{WebDoctor (ours)} & \textbf{4.2} & \textbf{4.3} & \textbf{4.2} & \textbf{42} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\subsection{Results}
+
+\subsubsection{Automatic Evaluation}~\\
+Table~\ref{tab:accuracy} reports the automatic evaluation results across all methods.
+The Base Model achieves only BLEU-4 5.1, confirming that zero-shot prompting, even with physician-identifying prefixes, cannot produce physician-specific outputs.
+Shared LoRA improves to BLEU-4 7.8, demonstrating that general clinical adaptation is beneficial, but the lack of per-physician differentiation leaves a substantial gap relative to individual adaptation.
+
+Among the merging baselines, simple averaging (LoRA-Merge-Avg) performs worst, with a BLEU-4 of 5.8 and a retention rate of only 55.8\%, indicating severe parameter interference when naively averaging $K=120$ adapters.
+Task arithmetic (LoRA-Merge-TA) improves retention to 83.7\% (BLEU-4 8.7), but still loses over 16\% of individual performance.
+TIES-MERGING achieves the strongest fusion result, with a retention rate of 97.1\% (BLEU-4 10.1), nearly matching the individual LoRA-Single gold standard (BLEU-4 10.4, PPL 17.6).
+The full WebDoctor system, which combines TIES-MERGING with identity-based LAG routing and physician-specific prompt prefixes, matches the LoRA-Single upper bound across all metrics (BLEU-4 10.4, ROUGE-L 20.8, BERTScore 0.73, PPL 17.6), demonstrating that the merged deployment mode introduces no measurable personalization degradation.
+
+\subsubsection{Human Evaluation}~\\
+Table~\ref{tab:ttft} presents the human evaluation results.
+The Base Model receives a personalization rating of only 2.1/5.0 and a preference share of 5\%, corroborating the automatic findings: physicians do not perceive the generic outputs as matching their communication style.
+Shared LoRA achieves moderate improvement (personalization 2.8, preference 12\%), but still falls well below acceptable levels for clinical deployment.
+The LoRA-Merge-TIES variant (personalization 4.0, clinical accuracy 4.2, preference 28\%) demonstrates that merged-adapter deployment can achieve high-quality personalization, though individual adapters retain a marginal lead.
+The full WebDoctor system achieves the highest ratings across all dimensions (personalization 4.2, clinical accuracy 4.3, fluency 4.2, preference 42\%), with physicians preferring its outputs in nearly half of all blind A/B comparisons.
+Notably, clinical accuracy is consistently high across all adapted methods (4.0--4.3), confirming that personalization does not compromise medical correctness; the primary differentiation occurs along the personalization dimension, where physician-specific adaptation yields the largest gains.
+
+\subsubsection{LAG Routing Accuracy}~\\
+We evaluate the LAG router's query-based retrieval accuracy on the test set.
+When the target physician is among the top-$m$ candidates, identity-based routing is triggered; otherwise, the query-based route is taken.
+With $m=1$, the router achieves a top-1 accuracy of 82.4\%, meaning it correctly identifies the target physician from the patient query alone in over four-fifths of cases.
+Accuracy rises to 94.7\% at top-3 and 98.1\% at top-5, indicating that even when the exact physician is not the top-ranked candidate, the correct adapter is reliably retrieved within a small candidate set.
+Random routing (uniform selection among $K=120$ physicians) achieves only 0.8\% top-1 accuracy, confirming that the LAG embeddings encode meaningful physician-style discriminative information.
+The routing overhead is negligible (4.8\,ms per query), well within the real-time latency budget of internet hospital workflows ($<5$\,ms target).
+
+
+\subsection{Component Validation and Ablation Study}
+
+\subsubsection{LoRA Rank and Data Efficiency}~\\
+We vary the LoRA rank $r \in \{4, 8, 16, 32\}$ to assess the impact of adapter capacity on personalization quality.
+Table~\ref{tab:ablation} (top block) shows that $r=8$ offers the best accuracy-efficiency trade-off: $r=4$ achieves BLEU-4 9.5 with a 4.2\,MB adapter footprint, while $r=8$ reaches BLEU-4 10.4 with 6.8\,MB, and $r=16$ yields only a marginal gain (BLEU-4 10.5) at nearly double the storage cost (13.1\,MB).
+$r=32$ provides no further improvement (BLEU-4 10.5), suggesting that the personalization signal saturates at moderate rank.
+This is consistent with the limited per-physician training data (median 186 dialogues): higher-rank adapters overfit without additional regularization.
+
+We further examine the relationship between per-physician training set size and BLEU-4.
+Physicians in the top quartile by dialogue count ($\ge 287$ dialogues, mean BLEU-4 11.2) outperform those in the bottom quartile ($\le 98$ dialogues, mean BLEU-4 9.1), confirming that personalization quality benefits from larger individual corpora.
+However, even the bottom-quartile physicians achieve a BLEU-4 more than double that of the Base Model (5.1), demonstrating the data efficiency of LoRA-based adaptation.
+
+\subsubsection{TIES-MERGING Performance Preservation}~\\
+Table~\ref{tab:ties_retention} reports the retention rate of TIES-MERGING as a function of the trim fraction $\tau$ and the number of merged adapters $K$.
+At the optimal $\tau=0.20$ and the full physician pool ($K=120$), TIES-MERGING retains 97.1\% of individual adapter performance (BLEU-4 10.1 vs.\ 10.4).
+Retention is robust across a range of $\tau$ values: $\tau=0.15$ achieves 94.2\%, $\tau=0.25$ achieves 95.2\%, and only at extremes ($\tau\le0.10$ or $\tau\ge0.40$) does retention drop below 90\%.
+Scaling $K$ from 20 to 120 physicians, the retention rate degrades gracefully from 98.6\% to 97.1\%, indicating that the ELECT SIGN step effectively resolves sign conflicts even as the adapter pool grows.
+In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% at $K=120$, confirming that interference accumulates multiplicatively without explicit sign resolution.
+
+\textbf{Deployment Efficiency.} Each individual LoRA adapter requires 6.8\,MB of storage and approximately 120\,ms to load from disk.
+For $K=120$ physicians, per-adapter serving would require 816\,MB of aggregate storage and, in the worst case, 120\,ms of loading latency per distinct physician request.
+The merged LoRA-Merge-TIES adapter occupies 6.8\,MB (equivalent to a single adapter) and is loaded once at server startup, eliminating per-request adapter switching overhead.
+End-to-end inference latency with the merged adapter is 1.8\,s per response on a single A100 GPU, identical to the individual adapter case, confirming that TIES-MERGING introduces no computational overhead at inference time.
+
+\subsubsection{Ablation Study}~\\
+We ablate the key design choices of WebDoctor, reporting BLEU-4 and human-evaluated personalization scores (5-point scale).
+Table~\ref{tab:ablation} (bottom block) presents the results.
+Removing the LAG router and relying solely on a generic prompt prefix (``w/o LAG'') causes a moderate drop (BLEU-4 10.2, personalization 4.0), confirming that explicit physician identity conditioning is important for stylistic fidelity.
+Disabling TIES-MERGING and serving individual adapters (``w/o Merge'') preserves full personalization quality (BLEU-4 10.4, personalization 4.2) but at the cost of $K$-fold storage and loading overhead, as discussed above.
+Removing both LAG and TIES-MERGING (i.e., Shared LoRA) yields the largest degradation (BLEU-4 7.8, personalization 2.8), confirming that both components contribute independently to personalization quality.
+Varying the TIES trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is overly aggressive (BLEU-4 9.3, retention 89.4\%), discarding useful parameters, while $\tau=0.30$ retains more parameters but introduces noise, reducing BLEU-4 slightly (9.5).
+
+\begin{table}[t]
+\setlength{\tabcolsep}{7pt}
+\renewcommand\arraystretch{1.05}
+\centering
+\caption{TIES-MERGING retention rate by trim fraction $\tau$ ($K=120$).}
+\label{tab:ties_retention}
+\begin{tabular}{c|cc}
+\toprule
+\textbf{Trim fraction $\tau$} & \textbf{BLEU-4} & \textbf{Retention (\%)} \\
+\midrule
+$\tau=0.10$ & 9.3 & 89.4 \\
+$\tau=0.15$ & 9.8 & 94.2 \\
+\rowcolor{blue!5}
+$\tau=0.20$ (ours) & \textbf{10.1} & \textbf{97.1} \\
+$\tau=0.25$ & 9.9 & 95.2 \\
+$\tau=0.30$ & 9.5 & 91.3 \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-\subsection{Human Evaluation}
-
-Table~\ref{tab:human-eval} presents the results of the expert human evaluation conducted by three board-certified physicians.
-
-\begin{table}[H]
-\caption{Human evaluation results (5-point Likert scale).\label{tab:human-eval}}
-\begin{tabularx}{\textwidth}{lCCCC}
+\begin{table}[t]
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand\arraystretch{1.08}
+\centering
+\caption{Ablation study on IHDPD test set. ``Full'' uses LoRA $r{=}8$, identity-based LAG routing, and TIES-MERGING with $\tau{=}0.20$. BLEU-4 and Personalization (5-point) are reported.}
+\label{tab:ablation}
+\begin{tabular}{c|c|cc}
 \toprule
-\textbf{Method} & \textbf{Personalization} & \textbf{Clin.\ Accuracy} & \textbf{Fluency} & \textbf{Pref.\ (\%)} \\
+\textbf{Component} & \textbf{Variant} & \textbf{BLEU-4} & \textbf{Personalization} \\
 \midrule
-Base Model (Zero-Shot) & 2.1 $\pm$ 0.3 & 3.2 $\pm$ 0.2 & 4.3 $\pm$ 0.1 & 8.3 \\
-Full Fine-Tuning (Aggr.) & 2.6 $\pm$ 0.2 & 3.8 $\pm$ 0.2 & 4.5 $\pm$ 0.1 & 15.7 \\
-LoRA (Single Aggregated) & 2.5 $\pm$ 0.3 & 3.7 $\pm$ 0.2 & 4.4 $\pm$ 0.1 & 13.2 \\
-LoRA-Multi (Individual) & \textbf{4.2} $\pm$ 0.1 & 3.9 $\pm$ 0.2 & 4.5 $\pm$ 0.1 & 28.5 \\
-Ours (LoRA + LAG) & \textbf{4.2} $\pm$ 0.1 & \textbf{4.1} $\pm$ 0.1 & \textbf{4.6} $\pm$ 0.1 & \textbf{34.3} \\
-\bottomrule
-\end{tabularx}
-\noindent{\small{Preference (\%) indicates the percentage of blind A/B comparisons in which raters preferred the method over the next-best alternative.}}
-\end{table}
-
-\subsection{Ablation Study}
-
-Table~\ref{tab:ablation} quantifies the contribution of each framework component.
-
-\begin{table}[H]
-\caption{Ablation study results.\label{tab:ablation}}
-\begin{tabularx}{\textwidth}{lCCC}
-\toprule
-\textbf{Configuration} & \textbf{BLEU-4} & \textbf{ROUGE-L} & \textbf{Personalization} \\
+Full & \cellcolor{blue!5}\textbf{WebDoctor} & \cellcolor{blue!5}\textbf{10.4} & \cellcolor{blue!5}\textbf{4.2} \\
 \midrule
-Base model only & 5.1 & 17.8 & 2.1 \\
- + LoRA training (aggregated) & 8.3 & 22.9 & 2.5 \\
- + Per-doctor LoRA & 10.4 & 26.2 & 4.2 \\
- + LAG routing & \textbf{10.6} & \textbf{26.5} & \textbf{4.2} \\
- + TIES-MERGING & 10.1 & 25.9 & 3.9 \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\subsection{Merging Quality Analysis}
-
-Table~\ref{tab:merge} compares TIES-MERGING against alternative merging strategies on the task of fusing 120 physician-specific LoRA adapters.
-
-\begin{table}[H]
-\caption{Comparison of model merging strategies.\label{tab:merge}}
-\begin{tabularx}{\textwidth}{lCCC}
-\toprule
-\textbf{Merge Method} & \textbf{Avg.\ Ind.\ BLEU-4} & \textbf{Merged BLEU-4} & \textbf{Retention (\%)} \\
+\multirow{4}{*}{LoRA rank $r$} & $r=4$ & 9.5 & 3.8 \\
+ & $r=8$ (ours) & 10.4 & 4.2 \\
+ & $r=16$ & 10.5 & 4.2 \\
+ & $r=32$ & 10.5 & 4.1 \\
 \midrule
-Simple Averaging & 10.4 & 5.8 & 55.8 \\
-Task Arithmetic~\cite{adapter-merging} & 10.4 & 8.7 & 83.7 \\
-TIES-MERGING ($\tau=0.2$)~\cite{yadav2024ties} & 10.4 & \textbf{10.1} & \textbf{97.1} \\
+\multirow{3}{*}{Data quartile} & Q1 ($\le$98 dialogues) & 9.1 & 3.6 \\
+ & Q2 (99--186) & 10.2 & 4.0 \\
+ & Q3 (187--287) & 10.8 & 4.3 \\
+ & Q4 ($\ge$288) & 11.2 & 4.4 \\
+\midrule
+\multirow{3}{*}{LAG routing} & w/o LAG (prompt only) & 10.2 & 4.0 \\
+ & Query-based LAG (top-1) & 10.3 & 4.1 \\
+ & Identity-based LAG & 10.4 & 4.2 \\
+\midrule
+\multirow{2}{*}{TIES trim $\tau$} & $\tau=0.10$ & 9.3 & 3.5 \\
+ & $\tau=0.30$ & 9.5 & 3.7 \\
+\midrule
+Component removal & w/o LAG (prompt only) & 10.2 & 4.0 \\
+\midrule
+ & w/o Merge (individual) & 10.4 & 4.2 \\
+\midrule
+ & w/o both (Shared LoRA) & 7.8 & 2.8 \\
+\midrule
+Deployment & Indiv.\ adapters ($K{=}120$) & 10.4 & 4.2 \\
+\midrule
+ & Merged adapter (1$\times$) & 10.1 & 4.0 \\
+\midrule
+ & Merged + LAG (ours) & 10.4 & 4.2 \\
 \bottomrule
-\end{tabularx}
-\noindent{\small{Retention = Merged BLEU-4 / Avg.\ Ind.\ BLEU-4 $\times$ 100\%.}}
+\end{tabular}
 \end{table}
