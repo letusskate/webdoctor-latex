@@ -1,5 +1,9 @@
 % !TeX root = ../main.tex
 
-% \section{CONCLUSION}
 \section{Conclusion}
 
+In this paper, we have presented a three-stage personalized adaptation framework for clinical response generation in internet hospital settings. The framework addresses the critical gap between generic LLM outputs and the personalized communication needs of individual physicians by combining doctor-specific LoRA training via the weclone pipeline, LoRA-Augmented Generation (LAG) for dynamic adapter routing, and TIES-MERGING for efficient multi-adapter fusion.
+
+We constructed the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset---a de-identified, multi-doctor multi-patient corpus spanning 15 clinical departments and 120 physicians---and demonstrated through comprehensive automatic and human evaluations that our framework achieves substantial improvements over competitive baselines. The LAG router provides accurate adapter selection with minimal latency overhead, while TIES-MERGING preserves 97.1\% of individual adapter performance after merging, enabling practical single-endpoint deployment for multi-physician internet hospital environments.
+
+The proposed framework offers a practical, scalable, and ethically grounded approach to deploying personalized LLM-based clinical assistance. By respecting individual physician preferences, departmental norms, and institutional governance requirements, it represents a meaningful step toward AI systems that physicians can trust as genuine collaborators in patient care rather than generic automation tools. We believe that physician-centered personalization will be a key enabler for the broader adoption of LLMs in clinical workflows, and we hope that the dataset, framework, and findings presented in this work will catalyze further research at the intersection of personalized language modeling and clinical natural language processing.

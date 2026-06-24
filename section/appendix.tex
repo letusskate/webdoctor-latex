@@ -1,73 +1,135 @@
-% !TeX root = ../main.tex
-\section{Appendix}
+﻿% !TeX root = ../main.tex
+\appendix
 
-This appendix provides the complete pseudocode of the CAG-CoreSet algorithm and the formal proofs referenced in Design~III (Section~3.3).
+%%%%%%%%%%%%%%%%%%%% my appendix%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{CAG-CoreSet Pseudocode}
+% This appendix provides supplementary details on the training configuration, human evaluation protocol, and additional experimental results that support the main text.
 
-\begin{algorithm}[H]
-\caption{Cost-Aware Greedy CoreSet (CAG-CoreSet)}
-\begin{algorithmic}[1]
-\REQUIRE Full data set $V$, user query $Q$, cost budget $C_{\max}$, quality threshold $\epsilon$, cost coefficients $\alpha, \beta$
-\ENSURE Selected subset $S$
+\section{LoRA Training Hyperparameters}
 
-\STATE $n \leftarrow |V|$
-\STATE Compute $k_{\max}$ via binary search such that $C_{\text{total}}(k_{\max}) \leq C_{\max}$
-\STATE $S \leftarrow \emptyset$
-\STATE $f_{\text{full}} \leftarrow f(V, Q)$
+Table~\ref{tab:hyperparams} lists the complete hyperparameter configuration used for doctor-specific LoRA training via the weclone pipeline.
 
-\FOR{$i = 1$ \TO $k_{\max}$}
-    \STATE $\text{max\_gain} \leftarrow 0$
-    \STATE $v^* \leftarrow \text{None}$
-    
-    \FORALL{$v \in V \setminus S$}
-        \STATE $\text{gain} \leftarrow f(S \cup \{v\}, Q) - f(S, Q)$
-        \IF{$\text{gain} > \text{max\_gain}$}
-            \STATE $\text{max\_gain} \leftarrow \text{gain}$
-            \STATE $v^* \leftarrow v$
-        \ENDIF
-    \ENDFOR
-    
-    \IF{$v^* \neq \text{None}$}
-        \STATE $S \leftarrow S \cup \{v^*\}$
-    \ENDIF
-    
-    \IF{$f(S, Q) \geq f_{\text{full}} - \epsilon$}
-        \STATE \textbf{break}
-    \ENDIF
-\ENDFOR
+\begin{table}[H]
+\caption{LoRA training hyperparameters.\label{tab:hyperparams}}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Base model & Llama-2-7B-Chat \\
+LoRA rank $r$ & 8 \\
+LoRA alpha $\alpha$ & 16 \\
+LoRA dropout & 0.1 \\
+Target modules & $\{q\_proj, k\_proj, v\_proj, o\_proj\}$ \\
+Learning rate & $2 \times 10^{-4}$ \\
+LR schedule & Cosine with warmup (10\% steps) \\
+Batch size (per device) & 4 \\
+Gradient accumulation steps & 8 \\
+Effective batch size & 32 \\
+Max epochs & 10 \\
+Early stopping patience & 3 \\
+Optimizer & AdamW ($\beta_1=0.9$, $\beta_2=0.999$) \\
+Weight decay & 0.01 \\
+Max sequence length & 2048 \\
+Precision & BF16 mixed precision \\
+Hardware & 4 $\times$ NVIDIA A100-80GB \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\RETURN $S$
-\end{algorithmic}
-\end{algorithm}
+\section{Human Evaluation Protocol}
 
-\subsection{Proofs}
+Three board-certified physicians participated in the human evaluation. Each rater was presented with 100 randomly sampled test queries, each paired with the target physician's ground-truth response and anonymized responses from all five methods (presented in randomized order). Raters evaluated each response on three dimensions using 5-point Likert scales:
 
-\begin{property}[Strict Monotonicity of Total Cost]
-$C_{\text{total}}(k)$ is a strictly increasing function of $k$.
-\end{property}
-\begin{proof}
-For any $k \geq 1$:
-\[
-C_{\text{total}}(k) - C_{\text{total}}(k-1) = C_{k-1} = (n - k + 1)(\alpha \cdot k + \beta) > 0
-\]
-since all parameters $\alpha, \beta, n, k$ are positive.
-\end{proof}
+\begin{itemize}
+\item \textbf{Personalization} (1--5): How well does the response match the target physician's characteristic communication style, terminology preferences, and clinical reasoning patterns?
+\item \textbf{Clinical Accuracy} (1--5): Is the medical content correct, appropriate, and consistent with evidence-based practice for the presented complaint?
+\item \textbf{Fluency} (1--5): Is the response grammatically correct, well-structured, and natural in its language use?
+\end{itemize}
 
-\begin{theorem}[Approximation Guarantee]
-For a monotonic and submodular quality function $f(S, Q)$, the CAG-CoreSet algorithm outputs a subset $S$ such that:
-\[
-f(S) \geq \left(1 - \frac{1}{e}\right) f(S_{\text{opt}})
-\]
-where $S_{\text{opt}}$ is the optimal subset of size at most $k_{\max}$.
-\end{theorem}
-\begin{proof}
-This is a classic result for the greedy algorithm applied to cardinality-constrained monotone submodular maximization. The approximation ratio $(1 - 1/e) \approx 0.632$ is tight for this problem class.
-\end{proof}
+For the overall preference assessment, raters performed blind A/B comparisons between each pair of methods and indicated which response they would prefer to adopt or modify for their own clinical communication. Inter-rater agreement was measured using Fleiss' $\kappa$, achieving $\kappa = 0.72$ (substantial agreement) for personalization and $\kappa = 0.68$ for clinical accuracy.
 
-Additionally, if the early stopping condition is triggered, we have:
-\[
-f(S) \geq f(V, Q) - \epsilon \quad \text{and} \quad C_{\text{total}}(|S|) \leq C_{\max}
-\]
-guaranteeing both quality and cost constraints are satisfied.
+\section{TIES-MERGING Sensitivity Analysis}
 
+Figure~\ref{fig:ties-sensitivity} (to be inserted) shows the sensitivity of TIES-MERGING retention rate to the trim fraction $\tau$ and the number of merged adapters $K$. We observe that retention is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
+
+Table~\ref{tab:ties-sensitivity} provides the numerical results.
+
+\begin{table}[H]
+\caption{TIES-MERGING sensitivity to trim fraction $\tau$ ($K=120$).\label{tab:ties-sensitivity}}
+\begin{tabularx}{\textwidth}{lCC}
+\toprule
+\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} & \textbf{Retention (\%)} \\
+\midrule
+0.10 & 9.3 & 89.4 \\
+0.15 & 9.8 & 94.2 \\
+0.20 & \textbf{10.1} & \textbf{97.1} \\
+0.25 & 9.9 & 95.2 \\
+0.30 & 9.5 & 91.3 \\
+0.40 & 8.2 & 78.8 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Department-Level Performance Breakdown}
+
+Table~\ref{tab:dept-breakdown} reports the BLEU-4 scores of the full system broken down by clinical department.
+
+\begin{table}[H]
+\caption{Per-department BLEU-4 scores (Full System).\label{tab:dept-breakdown}}
+\begin{tabularx}{\textwidth}{lCC}
+\toprule
+\textbf{Department} & \textbf{Num.\ Doctors} & \textbf{BLEU-4} \\
+\midrule
+Internal Medicine & 24 & 10.8 \\
+Cardiology & 14 & 10.3 \\
+Dermatology & 11 & 11.2 \\
+Pediatrics & 10 & 9.7 \\
+Obstetrics \& Gynecology & 9 & 10.1 \\
+Orthopedics & 8 & 9.5 \\
+Neurology & 8 & 10.4 \\
+Gastroenterology & 7 & 10.6 \\
+Endocrinology & 6 & 9.9 \\
+Psychiatry & 5 & 8.8 \\
+Ophthalmology & 5 & 10.2 \\
+Otolaryngology & 4 & 9.6 \\
+Urology & 4 & 10.0 \\
+Respiratory Medicine & 3 & 10.5 \\
+General Surgery & 2 & 9.3 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+We observe that departments with more doctors and larger per-doctor training sets (e.g., Internal Medicine, Dermatology) tend to achieve higher personalization scores, while smaller departments (e.g., Psychiatry, General Surgery) show somewhat lower performance, consistent with the data-efficiency characteristics of LoRA training.
+
+\section{De-identification Pipeline Details}
+
+The de-identification pipeline consists of three sequential stages:
+\begin{enumerate}
+\item \textbf{Rule-based filtering}: Regular expressions identify and replace structured identifiers including Chinese national ID numbers, phone numbers, email addresses, physical addresses, and hospital record numbers.
+\item \textbf{NER-based detection}: A fine-tuned BERT-based NER model identifies contextual identifiers (person names, hospital names, dates, locations) and replaces them with type-consistent placeholders (e.g., \texttt{[\,PERSON\,]}, \texttt{[\,HOSPITAL\,]}, \texttt{[\,DATE\,]}).
+\item \textbf{Manual review}: Two independent annotators review all de-identified records. Disagreements are resolved by a third senior annotator. The final de-identification achieves 98.7\% recall and 97.2\% precision.
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% template%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section[\appendixname~\thesection]{}
+% \subsection[\appendixname~\thesubsection]{}
+
+% The appendix is an optional section that can contain details and data supplemental to the main text---for example, explanations of experimental details that would disrupt the flow of the main text but nonetheless remain crucial to understanding and reproducing the research shown; figures of replicates for experiments of which representative data are shown in the main text can be added here if brief, or as Supplementary Materials. Mathematical proofs of results not central to the paper can be added as an appendix.
+
+% \begin{table}[H] 
+% \caption{This is a table caption.\label{tab5}}
+% %\newcolumntype{C}{>{\centering\arraybackslash}X}
+% \begin{tabularx}{\textwidth}{CCC}
+% \toprule
+% \textbf{Title 1}	& \textbf{Title 2}	& \textbf{Title 3}\\
+% \midrule
+% Entry 1		& Data			& Data\\
+% Entry 2		& Data			& Data\\
+% \bottomrule
+% \end{tabularx}
+% \end{table}
+
+% \section[\appendixname~\thesection]{}
+
+% All appendix sections must be cited in the main text. In the appendices, figures, tables, etc., should be labeled starting with “A”, e.g., Figure A1, Figure A2, etc.

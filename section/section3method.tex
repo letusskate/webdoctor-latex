@@ -2,3 +2,73 @@
 
 \section{Method}\label{section:design}
 
+In this section, we present our three-stage personalized adaptation framework. We begin with a formal problem formulation, then describe each component in detail: doctor-specific LoRA training via weclone, LoRA-Augmented Generation (LAG) for dynamic adapter routing, and TIES-MERGING for parameter fusion.
+
+\subsection{Problem Formulation}
+
+Let $\mathcal{D} = \{d_1, d_2, \ldots, d_K\}$ denote the set of $K$ physicians in an internet hospital, and let $\mathcal{M}_0$ denote a pre-trained base language model. Each physician $d_k$ is associated with a historical dialogue corpus $\mathcal{C}_k = \{(q_i^{(k)}, r_i^{(k)})\}_{i=1}^{N_k}$, where $q_i^{(k)}$ is a patient query and $r_i^{(k)}$ is the physician's corresponding response. Our objective is to construct a system that, given a new patient query $q$ directed to physician $d_k$, generates a candidate response $\hat{r}$ that (1) is clinically accurate, (2) reflects physician $d_k$'s personal linguistic style and departmental norms, and (3) complies with institutional regulations.
+
+Formally, we seek to learn physician-specific adaptation parameters $\Delta \Theta_k$ such that:
+\begin{equation}
+\hat{r} = \mathcal{M}_{\Theta_0 + \Delta \Theta_k}(q), \quad \text{where } \Delta \Theta_k \text{ captures the personalization for doctor } d_k.
+\end{equation}
+
+The key challenges are: (a) $N_k$ is typically small (tens to hundreds of examples), making full fine-tuning infeasible; (b) $K$ may be large, requiring efficient multi-doctor serving; and (c) the personalization signal must be disentangled from general clinical competence encoded in $\mathcal{M}_0$.
+
+\subsection{Doctor-Specific LoRA Training}
+
+We adopt Low-Rank Adaptation (LoRA)~\cite{hu2021lora} as our parameter-efficient fine-tuning strategy. For each physician $d_k$, we train a LoRA adapter that modifies the attention projection matrices of $\mathcal{M}_0$. Specifically, for a pre-trained weight matrix $W \in \mathbb{R}^{d \times d}$, LoRA constrains its update to a low-rank decomposition:
+\begin{equation}
+W + \Delta W = W + B A,
+\end{equation}
+where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times d}$ are trainable low-rank matrices with rank $r \ll d$. During training, only $A$ and $B$ are optimized, while $W$ remains frozen.
+
+We leverage the \textbf{weclone} training pipeline~\cite{weclone} for orchestrating the LoRA training process. Weclone provides a unified interface for data preprocessing, distributed training configuration, adapter checkpointing, and evaluation. For each physician $d_k$, the training objective is the standard causal language modeling loss:
+\begin{equation}
+\mathcal{L}_k = -\sum_{t=1}^{T} \log P(r_t^{(k)} \mid q^{(k)}, r_{<t}^{(k)}; \Theta_0 + \Delta \Theta_k).
+\end{equation}
+
+To prevent overfitting given the limited per-physician data, we apply the following regularization strategies: (1) a small LoRA rank $r \in \{4, 8, 16\}$; (2) dropout on the LoRA matrices with rate $\alpha = 0.1$; and (3) early stopping based on validation perplexity on a held-out subset of each physician's dialogues. Each trained adapter $\Delta \Theta_k$ is serialized to disk as a compact checkpoint (typically $<10$ MB), enabling efficient storage and loading.
+
+\subsection{LoRA-Augmented Generation (LAG) Routing}
+
+At inference time, the system must select the appropriate LoRA adapter for the target physician. We implement a LoRA-Augmented Generation (LAG) router~\cite{lag2024} that operates in two modes:
+
+\textbf{Identity-Based Routing.} When the target physician $d_k$ is known (the standard internet hospital scenario where a patient consults a specific doctor), the router directly loads the corresponding adapter $\Delta \Theta_k$ and merges it with the base model for generation.
+
+\textbf{Query-Based Routing.} In scenarios where the optimal physician is not predetermined (e.g., triage or automated preliminary response), the LAG router selects the most appropriate adapter from the candidate set $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$ based on query-adapter relevance. We encode the patient query $q$ and a representative summary of each physician's style using a sentence encoder $E(\cdot)$, and compute cosine similarity:
+\begin{equation}
+k^* = \arg\max_{k} \; \cos\big(E(q),\; E(s_k)\big),
+\end{equation}
+where $s_k$ is a textual description of physician $d_k$'s specialty, department, and communication style extracted from their consultation history.
+
+The selected adapter $\Delta \Theta_{k^*}$ is then applied to the base model, and generation proceeds autoregressively. The routing overhead is negligible ($<5$ ms per query) as it involves only a single forward pass through a lightweight encoder followed by a dot-product similarity computation.
+
+\subsection{TIES-MERGING for Parameter Fusion}
+
+While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. TIES-MERGING~\cite{yadav2024ties} enables us to fuse multiple adapters into a single merged artifact while minimizing interference. The algorithm proceeds in three stages:
+
+\textbf{Stage 1: TRIM.} For each parameter in the set of LoRA adapters $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$, we retain only the top-$\tau$ fraction of values by magnitude. This removes small, potentially noisy updates:
+\begin{equation}
+\widetilde{\Delta \Theta}_k = \text{Top}_\tau(\Delta \Theta_k), \quad \forall k \in \{1, \ldots, K\}.
+\end{equation}
+
+\textbf{Stage 2: ELECT SIGN.} For each parameter index $(i,j)$, we compute the aggregate sign across all trimmed adapters:
+\begin{equation}
+\gamma_{ij} = \text{sgn}\left(\sum_{k=1}^{K} \text{sgn}(\widetilde{\Delta \Theta}_{k,ij})\right).
+\end{equation}
+Only parameters whose individual sign matches the aggregate sign $\gamma_{ij}$ are retained for merging; parameters with conflicting signs are zeroed out, as they represent genuine interference:
+\begin{equation}
+\widehat{\Delta \Theta}_{k,ij} = \begin{cases}
+\widetilde{\Delta \Theta}_{k,ij}, & \text{if } \text{sgn}(\widetilde{\Delta \Theta}_{k,ij}) = \gamma_{ij} \\
+0, & \text{otherwise}.
+\end{cases}
+\end{equation}
+
+\textbf{Stage 3: MERGE.} The final merged adapter is obtained by averaging the sign-resolved parameters:
+\begin{equation}
+\Delta \Theta_{\text{merged}} = \frac{1}{|\mathcal{K}_{ij}|} \sum_{k \in \mathcal{K}_{ij}} \widehat{\Delta \Theta}_{k},
+\end{equation}
+where $\mathcal{K}_{ij} = \{k : \widehat{\Delta \Theta}_{k,ij} \neq 0\}$ is the set of adapters contributing to parameter $(i,j)$.
+
+The merged adapter $\Delta \Theta_{\text{merged}}$ can be loaded once and applied to the base model, serving all physicians through a single inference endpoint. Routing at inference time is then performed by conditioning generation on the target physician's identity through a prompt prefix that specifies the doctor's department and communication style, while the merged adapter provides the shared personalized parameter space.
