@@ -15,6 +15,10 @@ Formally, we seek to learn physician-specific adaptation parameters $\Delta \The
 
 The key challenges are: (a) $N_k$ is typically small (tens to hundreds of examples), making full fine-tuning infeasible; (b) $K$ may be large, requiring efficient multi-doctor serving; and (c) the personalization signal must be disentangled from general clinical competence encoded in $\mathcal{M}_0$.
 
+\input{figures/method-overview}
+
+
+
 \subsection{Doctor-Specific LoRA Training}
 
 We adopt Low-Rank Adaptation (LoRA)~\cite{hu2021lora} as our parameter-efficient fine-tuning strategy. For each physician $d_k$, we train a LoRA adapter that modifies the attention projection matrices of $\mathcal{M}_0$. Specifically, for a pre-trained weight matrix $W \in \mathbb{R}^{d \times d}$, LoRA constrains its update to a low-rank decomposition:

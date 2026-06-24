@@ -1,0 +1,71 @@
+% Method overview flowchart
+\begin{CJK}{UTF8}{gbsn}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.65cm,
+    box/.style={draw, rounded corners=3pt, minimum width=3.2cm, minimum height=0.7cm, align=center, font=\footnotesize},
+    stagebox/.style={draw, rounded corners=3pt, fill=blue!10, draw=blue!50, minimum width=3.5cm, minimum height=0.75cm, align=center, font=\footnotesize\bfseries},
+    inputbox/.style={draw, rounded corners=3pt, fill=green!8, draw=green!50!black, minimum width=3.5cm, minimum height=0.6cm, align=center, font=\footnotesize},
+    outputbox/.style={draw, rounded corners=3pt, fill=orange!10, draw=orange!60!black, minimum width=5cm, minimum height=0.65cm, align=center, font=\footnotesize},
+    arrow/.style={thick, ->, >=stealth},
+    dasharrow/.style={thick, ->, >=stealth, dashed, blue!60},
+]
+
+% ===== STAGE 1: LoRA Training (x=0) =====
+\node[stagebox] (s1) at (0,0) {Stage 1: 医生专属LoRA训练};
+\node[inputbox] (s1-input) at (0,1.8) {医生历史问诊数据\\(IHDPD 数据集)};
+\node[box] (s1-weclone) at (0,-1.3) {weclone 训练流水线};
+\node[box] (s1-lora) at (0,-2.4) {LoRA 适配器 $\Delta\Theta_1,\ldots,\Delta\Theta_K$};
+\node[font=\footnotesize\itshape, text=black!50] at (0,-3.0) {每个适配器 $<$10 MB};
+
+\draw[arrow] (s1-input) -- (s1);
+\draw[arrow] (s1) -- (s1-weclone);
+\draw[arrow] (s1-weclone) -- (s1-lora);
+
+% ===== STAGE 2: LAG Routing (x=4.8) =====
+\node[stagebox] (s2) at (4.8,0) {Stage 2: LAG 智能路由};
+\node[inputbox] (s2-input) at (4.8,1.8) {患者问询 $q$};
+\node[box] (s2-id) at (4.8,-1.3) {身份路由~(目标医生已知)};
+\node[box] (s2-qr) at (4.8,-2.15) {查询路由~(自动匹配风格)};
+\node[font=\footnotesize\itshape, text=black!50] at (7.5,-2.15) {Sentence-BERT 编码};
+
+\draw[arrow] (s2-input) -- (s2);
+\draw[arrow] (s2.south) -- (s2-id.north);
+\draw[arrow] (s2-id.south) -- (s2-qr.north);
+
+% Arrow: LoRAs -> LAG with label node
+\node[font=\footnotesize, align=center] (lora2lag) at (2.4,-1.8) {按需加载\\对应适配器};
+\draw[arrow] (1.6,-2.4) to[bend left=10] (3.2,-2.4);
+
+% ===== STAGE 3: TIES-MERGING (x=9.6) =====
+\node[stagebox] (s3) at (9.6,0) {Stage 3: TIES-MERGING};
+\node[box] (s3-trim) at (9.6,-1.1) {TRIM: 裁剪低幅值参数};
+\node[box] (s3-sign) at (9.6,-1.95) {ELECT SIGN: 符号冲突消解};
+\node[box] (s3-merge) at (9.6,-2.8) {MERGE: 加权平均融合};
+\node[box, fill=blue!8] (s3-result) at (9.6,-3.65) {统一融合适配器 $\Delta\Theta_{\mathrm{merged}}$};
+
+\draw[arrow] (s3) -- (s3-trim);
+\draw[arrow] (s3-trim) -- (s3-sign);
+\draw[arrow] (s3-sign) -- (s3-merge);
+\draw[arrow] (s3-merge) -- (s3-result);
+
+% Dashed arrow: all LoRAs -> TIES
+\node[font=\footnotesize, align=center] (lora2ties) at (5.5,-3.8) {多适配器\\离线融合};
+\draw[dasharrow] (1.6,-3.3) to[bend right=20] (8.0,-3.3);
+
+% ===== Output =====
+\node[outputbox] (output) at (4.8,-5.5) {\textbf{个性化医生响应} $\hat{r}$\\\footnotesize 贴合目标医生的语言风格、科室规范和临床习惯};
+
+% Arrows to output
+\draw[arrow] (s2-qr.south) -- ++(0,-0.7) -| (output.north);
+\draw[arrow] (s3-result.south) -- ++(0,-0.7) -| (output.north);
+
+% ===== Legend =====
+\node[font=\footnotesize] at (4.8,-6.3) {Stage 1 (离线训练)~~$\longrightarrow$~~Stage 2 (在线推理)~~$\longrightarrow$~~Stage 3 (离线融合)~~$\longrightarrow$~~多医生单端点部署};
+
+\end{tikzpicture}
+\caption{三阶段个性化适配框架整体流程。Stage~1：利用 weclone 流水线为每位医生训练独立的 LoRA 适配器；Stage~2：通过 LAG 路由根据患者问询和目标医生身份动态选择适配器；Stage~3：使用 TIES-MERGING (TRIM $\rightarrow$ ELECT SIGN $\rightarrow$ MERGE) 将多个医生适配器融合为统一部署工件，支持单端点服务所有医生。}
+\label{fig:method-overview}
+\end{figure}
+\end{CJK}
