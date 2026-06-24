@@ -1,5 +1,4 @@
 % Comparison figure: Our Framework vs General Medical QA AI
-\begin{CJK}{UTF8}{gbsn}
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
@@ -11,37 +10,36 @@
     arrow/.style={thick, ->, >=stealth}
 ]
 % Headers
-\node[header] (gpt-header) at (0,0) {\large 通用医学问答AI~(e.g., 阿福等)};
-\node[header, right=of gpt-header, xshift=1.5cm] (our-header) {\large 我们的框架~(Ours)};
+\node[header] (gpt-header) at (0,0) {\large General Medical QA AI};
+\node[header, right=of gpt-header, xshift=1.5cm] (our-header) {\large Our Framework (Ours)};
 
 % Feature rows
-\node[no, below=0.35cm of gpt-header] (g1) {\textcolor{red!70!black}{\large\textbf{X}}~~单一通用模型};
-\node[yes, below=0.35cm of our-header] (o1) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~每名医生独立优化};
+\node[no, below=0.35cm of gpt-header] (g1) {\textcolor{red!70!black}{\large\textbf{X}}~~Single shared model for all};
+\node[yes, below=0.35cm of our-header] (o1) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Per-doctor independent optimization};
 
-\node[no, below=0.3cm of g1] (g2) {\textcolor{red!70!black}{\large\textbf{X}}~~无科室差异};
-\node[yes, below=0.3cm of o1] (o2) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~按科室/专科适配};
+\node[no, below=0.3cm of g1] (g2) {\textcolor{red!70!black}{\large\textbf{X}}~~No departmental differentiation};
+\node[yes, below=0.3cm of o1] (o2) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Adapted per department/specialty};
 
-\node[no, below=0.3cm of g2] (g3) {\textcolor{red!70!black}{\large\textbf{X}}~~完全自动化, 无医生参与};
-\node[yes, below=0.3cm of o2] (o3) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~医生历史数据驱动优化};
+\node[no, below=0.3cm of g2] (g3) {\textcolor{red!70!black}{\large\textbf{X}}~~Fully automated, no doctor input};
+\node[yes, below=0.3cm of o2] (o3) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Driven by doctor's historical data};
 
-\node[no, below=0.3cm of g3] (g4) {\textcolor{red!70!black}{\large\textbf{X}}~~单一模型服务所有医生};
-\node[yes, below=0.3cm of o3] (o4) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~多LoRA适配器并行部署};
+\node[no, below=0.3cm of g3] (g4) {\textcolor{red!70!black}{\large\textbf{X}}~~One model serves all physicians};
+\node[yes, below=0.3cm of o3] (o4) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Multi-LoRA adapter parallel deployment};
 
-\node[no, below=0.3cm of g4] (g5) {\textcolor{red!70!black}{\large\textbf{X}}~~无法捕捉个人语言风格};
-\node[yes, below=0.3cm of o4] (o5) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~TIES-MERGING高效融合};
+\node[no, below=0.3cm of g4] (g5) {\textcolor{red!70!black}{\large\textbf{X}}~~Cannot capture individual style};
+\node[yes, below=0.3cm of o4] (o5) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~TIES-MERGING for efficient fusion};
 
-\node[no, below=0.3cm of g5] (g6) {\textcolor{red!70!black}{\large\textbf{X}}~~输出与医生习惯脱节};
-\node[yes, below=0.3cm of o5] (o6) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~个性化响应贴合临床实际};
+\node[no, below=0.3cm of g5] (g6) {\textcolor{red!70!black}{\large\textbf{X}}~~Output misaligned with doctor habits};
+\node[yes, below=0.3cm of o5] (o6) {\textcolor{green!60!black}{\large\textbf{\checkmark}}~~Personalized response fits clinical practice};
 
 % Footer
-\node[box, draw=red!40, below=0.5cm of g6] (g-footer) {\small 医生需大量修改AI建议};
-\node[box, draw=blue!60, fill=blue!5, below=0.5cm of o6] (o-footer) {\small\textbf{医生可直接采用或微调}};
+\node[box, draw=red!40, below=0.5cm of g6] (g-footer) {\small Physicians must heavily edit AI suggestions};
+\node[box, draw=blue!60, fill=blue!5, below=0.5cm of o6] (o-footer) {\small\textbf{Physicians can adopt directly or with minimal edits}};
 
 \draw[arrow, red!50, line width=1.5pt] (g-footer.north) -- (g6.south);
 \draw[arrow, blue!50, line width=1.5pt] (o-footer.north) -- (o6.south);
 
 \end{tikzpicture}
-\caption{我们的个性化框架与通用医学问答AI的对比。通用方案采用单一模型服务所有医生、无科室差异、缺乏医生参与；我们的框架通过医生专属LoRA训练、LAG路由和TIES-MERGING实现每名医生、每个科室的精准个性化优化，输出与医生临床习惯高度一致的响应。}
+\caption{Comparison between our personalized framework and general medical QA AI systems. General-purpose systems employ a single shared model lacking physician-specific adaptation, whereas our framework achieves per-doctor, per-department personalization through LoRA training, LAG routing, and TIES-MERGING, producing responses closely aligned with individual physicians' clinical communication styles.}
 \label{fig:comparison}
 \end{figure}
-\end{CJK}
