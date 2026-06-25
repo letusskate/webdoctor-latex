@@ -27,7 +27,7 @@ W + \Delta W = W + B A,
 \end{equation}
 where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times d}$ are trainable low-rank matrices with rank $r \ll d$. During training, only $A$ and $B$ are optimized, while $W$ remains frozen.
 
-We leverage the \textbf{weclone} training pipeline~\cite{weclone} for orchestrating the LoRA training process. Weclone provides a unified interface for data preprocessing, distributed training configuration, adapter checkpointing, and evaluation. For each physician $d_k$, the training objective is the standard causal language modeling loss:
+We adopt LoRA fine-tuning based on Unsloth~\cite{unsloth}~\cite{weclone}, an efficient framework for parameter-efficient fine-tuning that provides optimized kernels for training and inference. For each physician $d_k$, the training objective is the standard causal language modeling loss:
 \begin{equation}
 \mathcal{L}_k = -\sum_{t=1}^{T} \log P(r_t^{(k)} \mid q^{(k)}, r_{<t}^{(k)}; \Theta_0 + \Delta \Theta_k).
 \end{equation}

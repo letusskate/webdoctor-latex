@@ -6,7 +6,7 @@
 \subsection{Setup}
 
 
-\textbf{Basic Settings.} We evaluate on three base models spanning distinct capability tiers: LLaMA-3.2-1B-Instruct, LLaMA-3.2-3B-Instruct~\cite{grattafioriLlama3Herd2024}, and Qwen-2.5-7B-Instruct~\cite{qwenQwen25TechnicalReport2025}. For all LoRA training, we adopt the weclone pipeline~\cite{weclone} with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 4$\times$ NVIDIA A100-80GB GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply 4-bit NF4 quantization (1B/3B) or 8-bit quantization (7B) and FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. Unless otherwise specified, the full system (WebDoctor) uses per-physician LoRA-Single adapters with identity-based Doctor-Adaptive Routing (DAR) and Sign-Consistent Fusion (SCF) at trim fraction $\tau=0.20$.
+\textbf{Basic Settings.} We evaluate on three base models spanning distinct capability tiers: LLaMA-3.2-1B-Instruct, LLaMA-3.2-3B-Instruct~\cite{grattafioriLlama3Herd2024}, and Qwen-2.5-7B-Instruct~\cite{qwenQwen25TechnicalReport2025}. For all LoRA training, we adopt Unsloth~\cite{unsloth}~\cite{weclone} for LoRA fine-tuning with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 8$\times$ NVIDIA H20-3e (96GB) GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply 4-bit NF4 quantization (1B/3B) or 8-bit quantization (7B) and FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. Unless otherwise specified, the full system (WebDoctor) uses per-physician LoRA-Single adapters with identity-based Doctor-Adaptive Routing (DAR) and Sign-Consistent Fusion (SCF) at trim fraction $\tau=0.20$.
 
 \textbf{Datasets.} We evaluate on the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset described in Section~4. The dataset spans 15 clinical departments and $K=120$ physicians (each with $\ge50$ consultation records), comprising 30,146 de-identified multi-turn dialogues in total. Each physician's data is split into training (70\%), validation (15\%), and test (15\%) sets. Table~\ref{tab:dataset_len} summarizes the dataset statistics, including per-department physician counts and average dialogue length.
 \begin{itemize}[leftmargin=*]
@@ -66,8 +66,8 @@ General Surgery & 2 & 411 & 5.8 & 47 \\
 \end{table}
 
 \begin{table*}[!t]
-\small
-\setlength{\tabcolsep}{4pt}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
 \renewcommand\arraystretch{1.06}
 \centering
 \caption{Automatic evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. Retention Rate is relative to LoRA-Single (the per-physician gold standard). $\uparrow$: higher is better; $\downarrow$: lower is better.}
@@ -91,7 +91,7 @@ LoRA-Merge-TIES & 6.7 $|$ 10.1 $|$ 13.8 & 14.9 $|$ 20.2 $|$ 26.8 & 0.67 $|$ 0.72
 \end{table*}
 
 \begin{table*}[!t]
-\small
+\footnotesize
 \setlength{\tabcolsep}{4pt}
 \renewcommand\arraystretch{1.06}
 \centering
@@ -165,7 +165,7 @@ In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% a
 \textbf{Deployment Efficiency.} Each individual LoRA adapter requires 6.8\,MB of storage and approximately 120\,ms to load from disk.
 For $K=120$ physicians, per-adapter serving would require 816\,MB of aggregate storage and, in the worst case, 120\,ms of loading latency per distinct physician request.
 The merged SCF adapter occupies 6.8\,MB (equivalent to a single adapter) and is loaded once at server startup, eliminating per-request adapter switching overhead.
-End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single A100 GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
+End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single H20-3e GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
 
 \subsubsection{Ablation Study}~\\
 We ablate the key design choices of WebDoctor, reporting BLEU-4 and human-evaluated personalization scores (5-point scale) across all three model scales.
