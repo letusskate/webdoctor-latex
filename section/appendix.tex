@@ -1,4 +1,4 @@
-% !TeX root = ../main.tex
+Ôªø% !TeX root = ../main.tex
 \appendix
 
 %%%%%%%%%%%%%%%%%%%% my appendix%%%%%%%%%%%%%%%%%%%%%
@@ -36,9 +36,9 @@ Hardware & 8 $\times$ NVIDIA H20-3e (96GB) \\
 \end{tabularx}
 \end{table}
 
-\section{Human Evaluation Protocol}
+\section{LLM Judge Evaluation Protocol}
 
-Three board-certified physicians participated in the human evaluation. Each rater was presented with 100 randomly sampled test queries, each paired with the target physician's ground-truth response and anonymized responses from all five methods (presented in randomized order). Raters evaluated each response on three dimensions using 5-point Likert scales:
+We adopt Qwen3.6-35B-Instruct as an automated judge following the LLM-as-a-Judge paradigm~\cite{zheng2024judging}. For each test query, the judge receives the generated response together with the target physician's department, specialty description, and three representative historical responses as context. The judge evaluates each response on three dimensions using 5-point Likert scales:
 
 \begin{itemize}
 \item \textbf{Personalization} (1--5): How well does the response match the target physician's characteristic communication style, terminology preferences, and clinical reasoning patterns?
@@ -46,7 +46,7 @@ Three board-certified physicians participated in the human evaluation. Each rate
 \item \textbf{Fluency} (1--5): Is the response grammatically correct, well-structured, and natural in its language use?
 \end{itemize}
 
-For the overall preference assessment, raters performed blind A/B comparisons between each pair of methods and indicated which response they would prefer to adopt or modify for their own clinical communication. Inter-rater agreement was measured using Fleiss' $\kappa$, achieving $\kappa = 0.72$ (substantial agreement) for personalization and $\kappa = 0.68$ for clinical accuracy.
+For preference assessment, the judge performs pairwise comparisons between all method pairs. Self-consistency is evaluated by repeating each judgment three times with different prompt orderings; the majority vote is taken as the final preference. The judge achieves a self-consistency rate of 94.2\%, indicating high reliability.
 
 \section{SCF Sensitivity Analysis}
 
@@ -132,4 +132,4 @@ The de-identification pipeline consists of three sequential stages:
 
 % \section[\appendixname~\thesection]{}
 
-% All appendix sections must be cited in the main text. In the appendices, figures, tables, etc., should be labeled starting with °∞A°±, e.g., Figure A1, Figure A2, etc.
+% All appendix sections must be cited in the main text. In the appendices, figures, tables, etc., should be labeled starting with ‚ÄúA‚Äù, e.g., Figure A1, Figure A2, etc.

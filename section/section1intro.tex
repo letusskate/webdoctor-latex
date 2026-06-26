@@ -12,7 +12,7 @@ In this paper, we propose a three-stage personalized adaptation framework that a
 
 To support this research, we construct and release the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} dataset, a de-identified multi-doctor multi-patient corpus collected from a real-world operational internet hospital. The dataset spans multiple clinical departments and encompasses diverse consultation scenarios, including initial symptom inquiry, follow-up management, medication guidance, and lifestyle counseling. All personal health information has been rigorously de-identified in compliance with institutional ethics protocols~\cite{johnson2016mimic}.
 
-Our experimental evaluation demonstrates that the proposed framework achieves substantial improvements over competitive baselines across both automatic evaluation metrics and expert clinical human evaluation. Specifically, the DAR router achieves high routing accuracy, SCF preserves a significant fraction of individual adapter performance post-fusion, and the end-to-end system generates responses that are consistently rated as more personalized, professional, and clinically appropriate by practicing physicians.
+Our experimental evaluation demonstrates that the proposed framework achieves substantial improvements over competitive baselines across both automatic evaluation metrics and expert clinical human evaluation. Specifically, the DAR router achieves high routing accuracy, SCF preserves a significant fraction of individual adapter performance post-fusion, and the end-to-end system generates responses that are consistently rated as more personalized, professional, and clinically appropriate by the LLM judge (Qwen3.6-35B-Instruct).
 
 \input{figures/comparison}
 

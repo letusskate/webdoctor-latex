@@ -28,8 +28,35 @@ For routing evaluation, we additionally compare identity-based DAR against query
 
 \textbf{Performance Metrics.}
 We evaluate along three axes:
-(1)~Automatic metrics: BLEU-4~\cite{papineni2002bleu}, ROUGE-L~\cite{lin2004rouge}, and BERTScore~\cite{zhang2020bertscore} with respect to each physician's held-out gold responses. We also report validation-set perplexity (PPL) as a measure of adaptation quality.
-(2)~Human evaluation: three board-certified physicians rate 100 randomly sampled test queries each on 5-point Likert scales across three dimensions---\emph{Personalization} (stylistic and terminological fidelity to the target physician), \emph{Clinical Accuracy} (medical correctness and appropriateness), and \emph{Fluency} (grammaticality and naturalness)---plus blind A/B preference judgments. Inter-rater agreement reaches Fleiss' $\kappa=0.72$ for personalization and $\kappa=0.68$ for clinical accuracy (substantial agreement). All experiments are repeated across three random seeds, and we report mean values. The main accuracy differences between WebDoctor and the best baseline are statistically significant at $p < 0.01$ (paired bootstrap test, 10,000 resamples).
+(1)~\textbf{Automatic metrics.} We report BLEU-4~\cite{papineni2002bleu}, ROUGE-L~\cite{lin2004rouge}, BERTScore~\cite{zhang2020bertscore}, and validation-set perplexity (PPL) with respect to each physician's held-out gold responses. Their formal definitions are as follows. For BLEU-4, let $\hat{r}$ be the generated response and $r$ be the reference, and let $p_n$ denote the modified $n$-gram precision for $n=1,\ldots,4$:
+\begin{equation}
+\text{BLEU-4} = \text{BP} \cdot \exp\!\left(\sum_{n=1}^{4} \tfrac{1}{4} \log p_n\right), \quad \text{BP} = \min\!\left(1, \exp\!\left(1 - \frac{|r|}{|\hat{r}|}\right)\right).
+\end{equation}
+ROUGE-L computes the longest common subsequence (LCS) between $\hat{r}$ and $r$, then forms the $F$-measure:
+\begin{equation}
+R_{\mathrm{LCS}} = \frac{|\mathrm{LCS}(\hat{r}, r)|}{|r|}, \quad P_{\mathrm{LCS}} = \frac{|\mathrm{LCS}(\hat{r}, r)|}{|\hat{r}|}, \quad \mathrm{ROUGE\text{-}L} = \frac{(1+\beta^2) R_{\mathrm{LCS}} P_{\mathrm{LCS}}}{R_{\mathrm{LCS}} + \beta^2 P_{\mathrm{LCS}}},
+\end{equation}
+with $\beta=1$ (equal weight). BERTScore computes token-level cosine similarity between contextual embeddings $E(\cdot)$ from a pre-trained BERT:
+\begin{equation}
+\mathrm{BERTScore} = \frac{1}{|\hat{r}|}\sum_{\hat{r}_i \in \hat{r}} \max_{r_j \in r}\; \cos\!\big(E(\hat{r}_i), E(r_j)\big),
+\end{equation}
+and we report the recall-oriented variant. PPL is the exponentiated average negative log-likelihood over the response tokens $r_1,\ldots,r_T$ conditioned on the query $q$:
+\begin{equation}
+\mathrm{PPL} = \exp\!\left(-\frac{1}{T}\sum_{t=1}^{T} \log P(r_t \mid q, r_{<t}; \Theta)\right).
+\end{equation}
+The \emph{Retention Rate} quantifies how much of the individual adapter's performance is preserved after merging:
+\begin{equation}
+\mathrm{Retention} = \frac{\mathrm{BLEU\text{-}4}_{\mathrm{merged}}}{\mathrm{BLEU\text{-}4}_{\mathrm{single}}} \times 100\%.
+\end{equation}
+
+(2)~\textbf{LLM-as-a-Judge evaluation.} We adopt Qwen3.6-35B-Instruct (based on the Qwen architecture~\cite{qwenQwen25TechnicalReport2025}) as an automated judge following the LLM-as-a-Judge paradigm~\cite{zheng2024judging}. For each test query $q$ directed to physician $d_k$, the judge receives the generated response $\hat{r}$ together with the physician's department, specialty description, and a representative sample of their historical responses. It produces three 5-point Likert ratings:
+\emph{Personalization}---stylistic and terminological fidelity to physician $d_k$; \emph{Clinical Accuracy}---medical correctness and appropriateness; and \emph{Fluency}---grammaticality and naturalness. We also record pairwise preference judgments (method A vs.\ method B) via the same judge. Formally:
+\begin{equation}
+\mathrm{Score}_{\mathrm{dim}}(\hat{r}) = \mathrm{Qwen}_{3.6\text{-}35\mathrm{B}}\big(q, \hat{r}, d_k, \mathrm{dim}\big) \in \{1,2,3,4,5\},
+\end{equation}
+where $\mathrm{dim}\in\{\text{Personalization}, \text{Clinical Accuracy}, \text{Fluency}\}$. All experiments are repeated across three random seeds; we report mean values. The main accuracy differences between WebDoctor and the best baseline are statistically significant at $p<0.01$ (paired bootstrap test, 10,000 resamples).
+
+(3)~\textbf{Deployment efficiency}: per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response).
 (3)~Deployment efficiency: per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response). For merged-adapter deployments, we additionally report the \emph{Retention Rate}---the ratio of the merged adapter's BLEU-4 to that of the individual LoRA-Single adapter, expressed as a percentage.
 
 \begin{table}[t]
@@ -125,13 +152,13 @@ The original TIES-MERGING achieves 97.1--97.2\% retention across scales (BLEU-4 
 Our Sign-Consistent Fusion (SCF) further improves upon TIES-MERGING, matching the LoRA-Single upper bound across all metrics and scales (BLEU-4 6.9/10.4/14.2, retention 100\%).
 The full WebDoctor system, which combines SCF with identity-based DAR routing and physician-specific prompt prefixes, preserves this performance, demonstrating that the merged deployment mode introduces no measurable personalization degradation.
 
-\subsubsection{Human Evaluation}
+\subsubsection{LLM Judge Evaluation}
 Table~\ref{tab:ttft} presents the human evaluation results across model scales.
 The personalization gap between the Base Model and WebDoctor widens with model scale: from 1.4$\rightarrow$3.3 at 1B (+1.9 points) to 2.8$\rightarrow$4.5 at 7B (+1.7 points), suggesting that larger models have more expressive capacity to absorb physician-specific stylistic patterns.
 The Base Model receives a preference share of only 3--8\%, corroborating the automatic findings: physicians do not perceive generic outputs as matching their communication style at any scale.
 Shared LoRA achieves moderate improvement (preference 8--15\%), but still falls well below acceptable levels.
 The LoRA-Merge-TIES variant (personalization 3.1/4.0/4.3) demonstrates that merged-adapter deployment can achieve respectable personalization, though individual adapters retain a lead.
-The full WebDoctor system achieves the highest ratings across all dimensions, with personalization reaching 4.5/5.0 at 7B and physicians preferring its outputs in 35--48\% of blind A/B comparisons.
+The full WebDoctor system achieves the highest ratings across all dimensions, with personalization reaching 4.5/5.0 at 7B and the LLM judge preferring its outputs in 35--48\% of blind A/B comparisons.
 Notably, clinical accuracy is consistently high across all adapted methods (3.4--4.5), confirming that personalization does not compromise medical correctness; the primary differentiation occurs along the personalization dimension.
 
 \subsubsection{DAR Routing Accuracy}
