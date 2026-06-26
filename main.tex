@@ -113,7 +113,7 @@ $^{1}$ \quad Department of Smart Hospital Construction, the First Hospital of He
 %\conference{} % An extended version of a conference paper
 
 % Abstract (Do not insert blank lines, i.e. \\) 
-\abstract{The rapid growth of internet hospitals has created an urgent need for LLM-based clinical assistants that generate physician-specific responses during remote consultations. Existing medical QA systems produce generic outputs that fail to capture individual doctors' linguistic styles, departmental norms, and institutional constraints, limiting physician adoption. We propose a three-stage personalized adaptation framework. First, doctor-specific Low-Rank Adaptation (LoRA) modules are trained via LoRA fine-tuning based on Unsloth~\cite{unsloth}~\cite{weclone} on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving 100\% of individual adapter performance. We construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset spanning 15 clinical departments and 120 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines: the framework achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). The framework offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.}
+\abstract{The rapid growth of internet hospitals has created an urgent need for LLM-based clinical assistants that generate physician-specific responses during remote consultations. Existing medical QA systems produce generic outputs that fail to capture individual doctors' linguistic styles, departmental norms, and institutional constraints, limiting physician adoption. We propose a three-stage personalized adaptation framework. First, doctor-specific Low-Rank Adaptation (LoRA) modules are trained via LoRA fine-tuning based on Unsloth~\cite{unsloth2024}~\cite{weclone} on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving 100\% of individual adapter performance. We construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset spanning 15 clinical departments and 120 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines: the framework achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). The framework offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.}
 
 % Keywords
 \keyword{doctor; internet hospital; large language model; low-rank adaptation; model merging; natural language processing; personalization} 
@@ -183,6 +183,7 @@ $^{1}$ \quad Department of Smart Hospital Construction, the First Hospital of He
 \vspace{6pt}
 \authorcontributions{For research articles with several authors, a short paragraph specifying their individual contributions must be provided. The following statements should be used ``Conceptualization, Y.Wang and F.Liu.; methodology, Y.Wang.; software, Y.Wang.; validation, Y.Wang. and J.Wang.; formal analysis, Y.Wang.; investigation, P.Zhao.; resources, F.Liu., J.Wang. and P.Zhao.; data curation, F.Liu.; writing---original draft preparation, Y.Wang.; writing---review and editing, F.Liu.; visualization, Y.Wang. and F.Liu.; supervision, F.Liu., J.Wang. and P.Zhao.; project administration, P.Zhao.; funding acquisition, P.Zhao. All authors have read and agreed to the published version of the manuscript.}
 
+%%%%%%%%%%%%%%%%%%%% wyb try delete %%%%%%%%%%%%%%%%
 \funding{Please add: ``This research received no external funding'' or ``This research was funded by NAME OF FUNDER grant number XXX''. Check carefully that the details given are accurate and use the standard spelling of funding agency names at \url{https://search.crossref.org/funding}, any errors may affect your future funding.}
 
 \institutionalreview{In this section, please add the Institutional Review Board Statement and approval number for studies involving humans or animals. You might choose to exclude this statement if the study did not require ethical approval. Please note that the Editorial Office might ask you for further information. Please add ``The study was conducted in accordance with the Declaration of Helsinki, and approved by the Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies involving humans OR ``The animal study protocol was approved by the Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies involving animals OR ``Ethical review and approval were waived for this study due to REASON (please provide a detailed justification).” OR ``Not applicable.” for studies not involving humans or animals.}
@@ -198,12 +199,10 @@ Written informed consent for publication must be obtained from participating pat
 \acknowledgments{In this section, you can acknowledge any support given that is not covered by the author contribution or funding sections. This may include administrative and technical support, or donations in kind (e.g., materials used for experiments). Where GenAI has been used for purposes such as generating text, data, or graphics, or for study design, data collection, analysis, or interpretation of data, please add ``During the preparation of this manuscript/study, the author(s) used [tool name, version information] for the purposes of [description of use]. The authors have reviewed and edited the output and take full responsibility for the content of this publication.”}
 
 \conflictsofinterest{Declare conflicts of interest or state ``The authors declare no conflicts of interest.” Authors must identify and declare any personal circumstances or interests that may be perceived as inappropriately influencing the representation or interpretation of reported research results. Any role of the funders in the design of the study; in the collection, analyses or interpretation of data; in the writing of the manuscript; or in the decision to publish the results must be declared in this section. If there is no role, please state ``The funders had no role in the design of the study; in the collection, analyses, or interpretation of data; in the writing of the manuscript; or in the decision to publish the~results”.} 
+%%%%%%%%%%%%%%%%%%%% end wyb delete %%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Optional
-
-%% Only for journal Encyclopedia
-%\entrylink{The Link to this entry published on the encyclopedia platform.}
 
 \abbreviations{Abbreviations}{%
 The following abbreviations are used in this manuscript:\\
@@ -219,7 +218,7 @@ LD      & Linear dichroism
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Optional
-\appendixtitles{no} % Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
+\appendixtitles{yes} % Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
 \appendixstart
 \input{section/appendix}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -245,30 +244,7 @@ LD      & Linear dichroism
 %=====================================
 
 % ACS format
-\begin{thebibliography}{999}
-% Reference 1
-\bibitem{ref-journal}
-Author~1, T. The title of the cited article. {\em Journal Abbreviation} {\bf 2008}, {\em 10}, 142--149.
-% Reference 2
-\bibitem{ref-book1}
-Author~2, L. The title of the cited contribution. In {\em The Book Title}; Editor 1, F., Editor 2, A., Eds.; Publishing House: City, Country, 2007; pp. 32--58.
-% Reference 3
-\bibitem{ref-book2}
-Author 1, A.; Author 2, B. \textit{Book Title}, 3rd ed.; Publisher: Publisher Location, Country, 2008; pp. 154--196.
-% Reference 4
-\bibitem{ref-unpublish}
-Author 1, A.B.; Author 2, C. Title of Unpublished Work. \textit{Abbreviated Journal Name} year, \textit{phrase indicating stage of publication (submitted; accepted; in press)}.
-% Reference 5
-\bibitem{ref-url}
-Title of Site. Available online: URL (accessed on Day Month Year).
-% Reference 6
-\bibitem{ref-proceeding}
-Author 1, A.B.; Author 2, C.D.; Author 3, E.F. Title of presentation. In Proceedings of the Name of the Conference, Location of Conference, Country, Date of Conference (Day Month Year); Abstract Number (optional), Pagination (optional).
-% Reference 7
-\bibitem{ref-thesis}
-Author 1, A.B. Title of Thesis. Level of Thesis, Degree-Granting University, Location of University, Date of Completion.
-\end{thebibliography}
-
+\bibliography{refagent}
 % If authors have biography, please use the format below
 %\section*{Short Biography of Authors}
 %\bio
@@ -283,14 +259,6 @@ Author 1, A.B. Title of Thesis. Level of Thesis, Degree-Granting University, Loc
 % To cite two works by the same author: \citeauthor{ref-journal-1a} (\citeyear{ref-journal-1a}, \citeyear{ref-journal-1b}). This produces: Whittaker (1967, 1975)
 % To cite two works by the same author with specific pages: \citeauthor{ref-journal-3a} (\citeyear{ref-journal-3a}, p. 328; \citeyear{ref-journal-3b}, p.475). This produces: Wong (1999, p. 328; 2000, p. 475)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% for journal Sci
-%\reviewreports{\\
-%Reviewer 1 comments and authors�?response\\
-%Reviewer 2 comments and authors�?response\\
-%Reviewer 3 comments and authors�?response
-%}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \PublishersNote{}
 %\isPreprints{}{% This command is only used for ``preprints''.
 \end{adjustwidth}
