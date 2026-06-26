@@ -34,7 +34,7 @@ We adopt LoRA fine-tuning based on Unsloth~\cite{unsloth2024}~\cite{weclone}, an
 
 To prevent overfitting given the limited per-physician data, we apply the following regularization strategies: (1) a small LoRA rank $r \in \{4, 8, 16\}$; (2) dropout on the LoRA matrices with rate $\alpha = 0.1$; and (3) early stopping based on validation perplexity on a held-out subset of each physician's dialogues. Each trained adapter $\Delta \Theta_k$ is serialized to disk as a compact checkpoint (typically $<10$ MB), enabling efficient storage and loading.
 
-\subsection{Doctor-Adaptive Routing (DAR) Routing}
+\subsection{Doctor-Adaptive Routing (DAR)}
 
 At inference time, the system must select the appropriate LoRA adapter for the target physician. We implement a Doctor-Adaptive Routing (DAR) router that operates in two modes:
 
@@ -61,13 +61,15 @@ While per-physician LoRA adapters provide maximal personalization, serving $K$ s
 \begin{equation}
 \gamma_{ij} = \text{sgn}\left(\sum_{k=1}^{K} \text{sgn}(\widetilde{\Delta \Theta}_{k,ij})\right).
 \end{equation}
-Only parameters whose individual sign matches the aggregate sign $\gamma_{ij}$ are retained for merging; parameters with conflicting signs are zeroed out, as they represent genuine interference:
+% Only parameters whose individual sign matches the aggregate sign $\gamma_{ij}$ are retained for merging; parameters with conflicting signs are zeroed out, as they represent genuine interference:
+we compute a confidence-weighted aggregation. Parameters whose sign agrees with $\gamma_{ij}$ receive full weight; those with conflicting signs receive a soft penalty proportional to their magnitude relative to the group mean:
 \begin{equation}
 \widehat{\Delta \Theta}_{k,ij} = \begin{cases}
-\widetilde{\Delta \Theta}_{k,ij}, & \text{if } \text{sgn}(\widetilde{\Delta \Theta}_{k,ij}) = \gamma_{ij} \\
-0, & \text{otherwise}.
+\widetilde{\Delta \Theta}_{k,ij}, & \text{if } \text{sgn}(\widetilde{\Delta \Theta}_{k,ij}) = \gamma_{ij} \\[4pt]
+\widetilde{\Delta \Theta}_{k,ij} \cdot \exp\left(-\eta \frac{|\widetilde{\Delta \Theta}_{k,ij}|}{\bar{\Delta}_{ij}}\right), & \text{otherwise},
 \end{cases}
 \end{equation}
+where $\bar{\Delta}_{ij} = \frac{1}{K}\sum_{k=1}^K |\widetilde{\Delta \Theta}_{k,ij}|$ is the mean magnitude and $\eta$ controls the penalty strength.
 
 \textbf{Stage 3: MERGE.} The final merged adapter is obtained by averaging the sign-resolved parameters:
 \begin{equation}

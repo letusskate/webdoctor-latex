@@ -1,10 +1,10 @@
-% !TeX root = ../main.tex
+﻿% !TeX root = ../main.tex
 
 \section{Implementation}
 
 \subsection{Dataset Construction: IHDPD}
 
-We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} dataset from the consultation records of a real-world internet hospital platform. The data collection and processing pipeline adheres to strict ethical and privacy protocols approved by the institutional review board.
+We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} dataset from the consultation records of a real-world internet hospital platform. The data collection and processing pipeline adheres to strict ethical and privacy protocols approved by the First Hospital of Hebei Medical University.
 
 \textbf{Data Source.} The raw data consist of text-based consultation records collected over a 24-month period (January 2024 to December 2025) from an operational internet hospital serving over 100,000 registered patients and more than 500 licensed physicians across 15 clinical departments, including internal medicine, cardiology, dermatology, pediatrics, obstetrics and gynecology, orthopedics, neurology, gastroenterology, endocrinology, psychiatry, ophthalmology, otolaryngology, urology, respiratory medicine, and general surgery.
 
@@ -22,7 +22,7 @@ Our system is implemented as a modular pipeline comprising four stages:
 
 \textbf{Stage 2: LoRA Training.} We perform LoRA fine-tuning using Unsloth~\cite{unsloth2024}~\cite{weclone} with the following hyperparameters: LoRA rank $r = 8$, LoRA alpha $\alpha = 16$, dropout rate $0.1$, target modules $\{q\_proj, v\_proj, k\_proj, o\_proj\}$, learning rate $2 \times 10^{-4}$ with cosine scheduling, batch size 4 with gradient accumulation over 8 steps (effective batch size 32), and a maximum of 10 training epochs with early stopping (patience = 3). Training is conducted on 8$\times$ NVIDIA H20-3e (96GB) GPUs using DeepSpeed ZeRO Stage-2 optimization.
 
-\textbf{Stage 3: DAR Router.} The router encodes physician style descriptions $s_k$ using a distilled Sentence-BERT model~\cite{zheng2024judging} (384-dimensional embeddings) pre-computed offline and stored in an in-memory FAISS index~\cite{johnson2019faiss}. At inference time, the patient query is encoded on-the-fly, and the top-$m$ most similar physician adapters are retrieved. For identity-based routing, this step is bypassed entirely, and the system directly loads the prescribed adapter.
+\textbf{Stage 3: DAR Router.} The router encodes physician style descriptions $s_k$ using a distilled Sentence-BERT model~\cite{reimers2019sentence} (384-dimensional embeddings) pre-computed offline and stored in an in-memory FAISS index~\cite{johnson2019faiss}. At inference time, the patient query is encoded on-the-fly, and the top-$m$ most similar physician adapters are retrieved. For identity-based routing, this step is bypassed entirely, and the system directly loads the prescribed adapter.
 
 \textbf{Stage 4: Inference with Merged Adapters.} The system supports two deployment modes: (a) per-adapter serving, where each physician's LoRA adapter is loaded on demand and applied to the base model for generation (suitable for low-traffic scenarios or A/B testing); and (b) merged-adapter serving, where SCF is applied offline to produce a single merged adapter that is pre-loaded, and generation is conditioned on a physician-identifying prompt prefix. The merged mode supports a prompt template: ``\texttt{\\string[Department: \{dept\}\string] \string[Physician ID: \{doc\_id\}\string] Patient: \{query\}$\backslash$nDoctor:}'' that cues the model to generate in the appropriate personalized style.
 

@@ -2,7 +2,7 @@
 
 \section{Conclusion}
 
-In this paper, we have presented a three-stage personalized adaptation framework for clinical response generation in internet hospital settings. The framework addresses the critical gap between generic LLM outputs and the personalized communication needs of individual physicians by combining doctor-specific LoRA training via Unsloth-based LoRA fine-tuning, LoRA-Augmented Generation (DAR) for dynamic adapter routing, and SCF for efficient multi-adapter fusion.
+In this paper, we have presented a three-stage personalized adaptation framework for clinical response generation in internet hospital settings. The framework addresses the critical gap between generic LLM outputs and the personalized communication needs of individual physicians by combining doctor-specific LoRA training via Unsloth-based LoRA fine-tuning, Doctor-Adaptive Routing (DAR) for dynamic adapter routing, and SCF for efficient multi-adapter fusion.
 
 We constructed the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset---a de-identified, multi-doctor multi-patient corpus spanning 15 clinical departments and 120 physicians---and demonstrated through comprehensive automatic and human evaluations that our framework achieves substantial improvements over competitive baselines. The DAR router provides accurate adapter selection with minimal latency overhead, while SCF preserves 97.1\% of individual adapter performance after merging, enabling practical single-endpoint deployment for multi-physician internet hospital environments.
 

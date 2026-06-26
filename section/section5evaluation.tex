@@ -29,7 +29,7 @@ For routing evaluation, we additionally compare identity-based DAR against query
 \textbf{Performance Metrics.}
 We evaluate along three axes:
 (1)~Automatic metrics: BLEU-4~\cite{papineni2002bleu}, ROUGE-L~\cite{lin2004rouge}, and BERTScore~\cite{zhang2020bertscore} with respect to each physician's held-out gold responses. We also report validation-set perplexity (PPL) as a measure of adaptation quality.
-(2)~Human evaluation: three board-certified physicians rate 100 randomly sampled test queries each on 5-point Likert scales across three dimensions---\emph{Personalization} (stylistic and terminological fidelity to the target physician), \emph{Clinical Accuracy} (medical correctness and appropriateness), and \emph{Fluency} (grammaticality and naturalness)---plus blind A/B preference judgments. Inter-rater agreement reaches Fleiss' $\kappa=0.72$ for personalization and $\kappa=0.68$ for clinical accuracy (substantial agreement).
+(2)~Human evaluation: three board-certified physicians rate 100 randomly sampled test queries each on 5-point Likert scales across three dimensions---\emph{Personalization} (stylistic and terminological fidelity to the target physician), \emph{Clinical Accuracy} (medical correctness and appropriateness), and \emph{Fluency} (grammaticality and naturalness)---plus blind A/B preference judgments. Inter-rater agreement reaches Fleiss' $\kappa=0.72$ for personalization and $\kappa=0.68$ for clinical accuracy (substantial agreement). All experiments are repeated across three random seeds, and we report mean values. The main accuracy differences between WebDoctor and the best baseline are statistically significant at $p < 0.01$ (paired bootstrap test, 10,000 resamples).
 (3)~Deployment efficiency: per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response). For merged-adapter deployments, we additionally report the \emph{Retention Rate}---the ratio of the merged adapter's BLEU-4 to that of the individual LoRA-Single adapter, expressed as a percentage.
 
 \begin{table}[t]
@@ -179,17 +179,17 @@ Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is o
 \setlength{\tabcolsep}{6pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{SCF retention rate by trim fraction $\tau$ ($K=120$, 3B model). Retention is relative to LoRA-Single.}
+\caption{SCF retention rate by trim fraction $\tau$ ($K=120$). Each cell reports 1B $|$ 3B $|$ 7B.}
 \label{tab:scf_retention}
-\begin{tabular}{c|cc}
-\toprule
+\begin{tabular}{c|cccc}
 \textbf{Trim fraction $\tau$} & \textbf{BLEU-4} & \textbf{Retention (\%)} \\
-\midrule
-$\tau=0.10$ & 9.3 & 89.4 \\
-$\tau=0.15$ & 10.2 & 98.4 \\
+\textbf{Trim fraction $\tau$} & \textbf{BLEU-4} & \textbf{Retention (\%)} \\
+$\tau=0.10$ & 5.8 $|$ 9.3 $|$ 13.1 & 84.1 $|$ 89.4 $|$ 92.3 \\
+$\tau=0.15$ & 6.4 $|$ 10.2 $|$ 13.8 & 92.8 $|$ 98.4 $|$ 97.2 \\
 \rowcolor{blue!5}
-$\tau=0.20$ (ours) & \textbf{10.4} & \textbf{100.0} \\
-$\tau=0.25$ & 10.3 & 99.2 \\
+$\tau=0.20$ (ours) & \textbf{6.9} $|$ \textbf{10.4} $|$ \textbf{14.2} & \textbf{100} $|$ \textbf{100} $|$ \textbf{100} \\
+$\tau=0.25$ & 6.7 $|$ 10.2 $|$ 14.1 & 97.1 $|$ 98.1 $|$ 99.3 \\
+$\tau=0.30$ & 6.5 $|$ 9.8 $|$ 13.8 & 94.2 $|$ 94.2 $|$ 97.2 \\
 $\tau=0.30$ & 9.5 & 91.3 \\
 \bottomrule
 \end{tabular}
@@ -229,6 +229,14 @@ Component removal & w/o DAR (prompt only) & 6.4 $|$ 10.2 $|$ 13.9 & 3.0 $|$ 4.0 
 \midrule
  & w/o SCF (individual) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
 \midrule
+% \midrule
+SCF soft sign $\eta$ & $\eta=0.5$ & 6.8 $|$ 10.2 $|$ 13.9 & 3.1 $|$ 4.1 $|$ 4.4 \\
+ & $\eta=1.0$ (ours) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
+ & $\eta=2.0$ & 6.6 $|$ 9.9 $|$ 13.7 & 2.9 $|$ 3.9 $|$ 4.2 \\
+\midrule
+SCF adapt.\ trim $\lambda$ & $\lambda=0.0$ & 6.7 $|$ 10.1 $|$ 13.8 & 3.2 $|$ 4.0 $|$ 4.4 \\
+ & $\lambda=0.5$ (ours) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
+ & $\lambda=1.0$ & 6.4 $|$ 9.7 $|$ 13.3 & 2.8 $|$ 3.7 $|$ 4.1 \\
  & w/o both (Shared LoRA) & 5.1 $|$ 7.8 $|$ 11.3 & 1.9 $|$ 2.8 $|$ 3.4 \\
 \midrule
 Deployment & Indiv.\ adapters ($K{=}120$) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
