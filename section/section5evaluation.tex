@@ -114,7 +114,7 @@ LoRA-Merge-TIES & 3.1 $|$ 4.0 $|$ 4.3 & 3.7 $|$ 4.2 $|$ 4.4 & 3.9 $|$ 4.0 $|$ 4.
 
 \subsection{Results}
 
-\subsubsection{Automatic Evaluation}~\\
+\subsubsection{Automatic Evaluation}
 Table~\ref{tab:accuracy} reports the automatic evaluation results across all methods and model scales.
 The Base Model achieves BLEU-4 scores of 3.2/5.1/7.5 at 1B/3B/7B, confirming that zero-shot prompting cannot produce physician-specific outputs even as model scale increases.
 Shared LoRA improves to 5.1/7.8/11.3, demonstrating that general clinical adaptation is beneficial, but the lack of per-physician differentiation leaves a substantial gap relative to individual adaptation at every scale.
@@ -125,7 +125,7 @@ The original TIES-MERGING achieves 97.1--97.2\% retention across scales (BLEU-4 
 Our Sign-Consistent Fusion (SCF) further improves upon TIES-MERGING, matching the LoRA-Single upper bound across all metrics and scales (BLEU-4 6.9/10.4/14.2, retention 100\%).
 The full WebDoctor system, which combines SCF with identity-based DAR routing and physician-specific prompt prefixes, preserves this performance, demonstrating that the merged deployment mode introduces no measurable personalization degradation.
 
-\subsubsection{Human Evaluation}~\\
+\subsubsection{Human Evaluation}
 Table~\ref{tab:ttft} presents the human evaluation results across model scales.
 The personalization gap between the Base Model and WebDoctor widens with model scale: from 1.4$\rightarrow$3.3 at 1B (+1.9 points) to 2.8$\rightarrow$4.5 at 7B (+1.7 points), suggesting that larger models have more expressive capacity to absorb physician-specific stylistic patterns.
 The Base Model receives a preference share of only 3--8\%, corroborating the automatic findings: physicians do not perceive generic outputs as matching their communication style at any scale.
@@ -134,7 +134,7 @@ The LoRA-Merge-TIES variant (personalization 3.1/4.0/4.3) demonstrates that merg
 The full WebDoctor system achieves the highest ratings across all dimensions, with personalization reaching 4.5/5.0 at 7B and physicians preferring its outputs in 35--48\% of blind A/B comparisons.
 Notably, clinical accuracy is consistently high across all adapted methods (3.4--4.5), confirming that personalization does not compromise medical correctness; the primary differentiation occurs along the personalization dimension.
 
-\subsubsection{DAR Routing Accuracy}~\\
+\subsubsection{DAR Routing Accuracy}
 We evaluate the DAR router's query-based retrieval accuracy on the test set.
 Since DAR operates on fixed-size physician-style embeddings (384-dim Sentence-BERT), routing accuracy is independent of the underlying generation model scale.
 With $m=1$, the router achieves a top-1 accuracy of 82.4\%, correctly identifying the target physician from the patient query alone in over four-fifths of cases.
@@ -145,7 +145,7 @@ The routing overhead is negligible (4.8\,ms per query), well within the real-tim
 
 \subsection{Component Validation and Ablation Study}
 
-\subsubsection{LoRA Rank and Data Efficiency}~\\
+\subsubsection{LoRA Rank and Data Efficiency}
 We vary the LoRA rank $r \in \{4, 8, 16, 32\}$ to assess the impact of adapter capacity on personalization quality across model scales.
 Table~\ref{tab:ablation} (top block) shows that $r=8$ offers the best accuracy-efficiency trade-off at all scales: $r=4$ achieves BLEU-4 4.9/9.5/13.4 with a 4.2\,MB adapter footprint, while $r=8$ reaches 5.4/10.4/14.2 with 6.8\,MB, and $r=16$ yields only a marginal gain (5.5/10.5/14.3) at nearly double the storage cost (13.1\,MB).
 $r=32$ provides no further improvement (5.5/10.5/14.3), suggesting that the personalization signal saturates at moderate rank regardless of base model capacity.
@@ -155,7 +155,7 @@ We further examine the relationship between per-physician training set size and 
 Physicians in the top quartile by dialogue count ($\ge 287$ dialogues) outperform those in the bottom quartile ($\le 98$ dialogues) by 1.3--1.5 BLEU-4 points across model scales, confirming that personalization quality benefits from larger individual corpora.
 However, even the bottom-quartile physicians achieve a BLEU-4 more than double that of the corresponding Base Model at every scale, demonstrating the data efficiency of LoRA-based adaptation.
 
-\subsubsection{SCF Performance Preservation}~\\
+\subsubsection{SCF Performance Preservation}
 Table~\ref{tab:scf_retention} reports the retention rate of SCF as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
 At the optimal $\tau=0.20$ and the full physician pool ($K=120$), SCF retains 100\% of individual adapter performance (BLEU-4 10.4 vs.\ 10.4), outperforming the original TIES-MERGING (97.1\%) at the same $\tau$.
 Retention is robust across a range of $\tau$ values: $\tau=0.15$ achieves 98.4\%, $\tau=0.25$ achieves 99.2\%, and only at extremes ($\tau\le0.10$ or $\tau\ge0.40$) does retention drop below 95\%.
@@ -167,7 +167,7 @@ For $K=120$ physicians, per-adapter serving would require 816\,MB of aggregate s
 The merged SCF adapter occupies 6.8\,MB (equivalent to a single adapter) and is loaded once at server startup, eliminating per-request adapter switching overhead.
 End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single H20-3e GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
 
-\subsubsection{Ablation Study}~\\
+\subsubsection{Ablation Study}
 We ablate the key design choices of WebDoctor, reporting BLEU-4 and human-evaluated personalization scores (5-point scale) across all three model scales.
 Table~\ref{tab:ablation} (bottom block) presents the results.
 Removing the DAR router and relying solely on a generic prompt prefix (``w/o DAR'') causes a moderate drop across scales (BLEU-4 6.4/10.2/13.9, personalization 3.0/4.0/4.4), confirming that explicit physician identity conditioning via adaptive routing is important for stylistic fidelity.
@@ -181,9 +181,10 @@ Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is o
 \centering
 \caption{SCF retention rate by trim fraction $\tau$ ($K=120$). Each cell reports 1B $|$ 3B $|$ 7B.}
 \label{tab:scf_retention}
-\begin{tabular}{c|cccc}
+\begin{tabular}{c|cc}
+\toprule
 \textbf{Trim fraction $\tau$} & \textbf{BLEU-4} & \textbf{Retention (\%)} \\
-\textbf{Trim fraction $\tau$} & \textbf{BLEU-4} & \textbf{Retention (\%)} \\
+\midrule
 $\tau=0.10$ & 5.8 $|$ 9.3 $|$ 13.1 & 84.1 $|$ 89.4 $|$ 92.3 \\
 $\tau=0.15$ & 6.4 $|$ 10.2 $|$ 13.8 & 92.8 $|$ 98.4 $|$ 97.2 \\
 \rowcolor{blue!5}
