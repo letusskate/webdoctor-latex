@@ -15,7 +15,7 @@ Table~\ref{tab:hyperparams} lists the complete hyperparameter configuration used
 \toprule
 \textbf{Parameter} & \textbf{Value} \\
 \midrule
-Base model & Llama-2-7B-Chat \\
+Base model & LLaMA-3.2-1B/3B-Instruct, Qwen-2.5-7B-Instruct \\
 LoRA rank $r$ & 8 \\
 LoRA alpha $\alpha$ & 16 \\
 LoRA dropout & 0.1 \\
@@ -50,7 +50,7 @@ For preference assessment, the judge performs pairwise comparisons between all m
 
 \section{SCF Sensitivity Analysis}
 
-Figure~\ref{fig:ties-sensitivity} (to be inserted) shows the sensitivity of SCF retention rate to the trim fraction $\tau$ and the number of merged adapters $K$. We observe that retention is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
+Figure~\ref{fig:ties-sensitivity} shows the sensitivity of SCF retention rate to the trim fraction $\tau$ and the number of merged adapters $K$. We observe that retention is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
 
 Table~\ref{tab:ties-sensitivity} provides the numerical results.
 
