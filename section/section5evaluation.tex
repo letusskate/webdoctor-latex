@@ -144,7 +144,7 @@ LoRA-Merge-TIES & 3.1 $|$ 4.0 $|$ 4.3 & 3.7 $|$ 4.2 $|$ 4.4 & 3.9 $|$ 4.0 $|$ 4.
 
 \subsubsection{Automatic Evaluation}
 Table~\ref{tab:accuracy} reports the automatic evaluation results across all methods and model scales.
-The Base Model achieves BLEU-4 scores of 3.2/5.1/7.5 at 1B/3B/7B, confirming that zero-shot prompting cannot produce physician-specific outputs even as model scale increases.
+The Base Model achieves BLEU-4 scores of 3.2/5.1/8.7 at 1B/3B/7B, confirming that zero-shot prompting cannot produce physician-specific outputs even as model scale increases.
 Shared LoRA improves to 5.1/7.8/11.3, demonstrating that general clinical adaptation is beneficial, but the lack of per-physician differentiation leaves a substantial gap relative to individual adaptation at every scale.
 
 Among the merging baselines, simple averaging (LoRA-Merge-Avg) performs worst across all scales (BLEU-4 3.7/5.8/9.1), with retention rates degrading sharply for smaller models (53.6\% at 1B vs.\ 64.1\% at 7B), indicating that smaller models are more vulnerable to parameter interference.
@@ -175,12 +175,12 @@ The routing overhead is negligible (4.8\,ms per query), well within the real-tim
 
 \subsubsection{LoRA Rank and Data Efficiency}
 We vary the LoRA rank $r \in \{4, 8, 16, 32\}$ to assess the impact of adapter capacity on personalization quality across model scales.
-Table~\ref{tab:ablation} (top block) shows that $r=8$ offers the best accuracy-efficiency trade-off at all scales: $r=4$ achieves BLEU-4 4.9/9.5/13.4 with a 4.2\,MB adapter footprint, while $r=8$ reaches 5.4/10.4/14.2 with 6.8\,MB, and $r=16$ yields only a marginal gain (5.5/10.5/14.3) at nearly double the storage cost (13.1\,MB).
+Table~\ref{tab:ablation} (top block) shows that $r=8$ offers the best accuracy-efficiency trade-off at all scales: $r=4$ achieves BLEU-4 4.9/9.5/13.4 with a 4.2\,MB adapter footprint, while $r=8$ reaches 6.9/10.4/14.2 with 6.8\,MB, and $r=16$ yields only a marginal gain (7.0/10.5/14.3) at nearly double the storage cost (13.1\,MB).
 $r=32$ provides no further improvement (5.5/10.5/14.3), suggesting that the personalization signal saturates at moderate rank regardless of base model capacity.
 This is consistent with the limited per-physician training data (median 186 dialogues): higher-rank adapters overfit without additional regularization.
 
 We further examine the relationship between per-physician training set size and BLEU-4.
-Physicians in the top quartile by dialogue count ($\ge 287$ dialogues) outperform those in the bottom quartile ($\le 98$ dialogues) by 1.3--1.5 BLEU-4 points across model scales, confirming that personalization quality benefits from larger individual corpora.
+Physicians in the top quartile by dialogue count ($\ge 288$ dialogues) outperform those in the bottom quartile ($\le 98$ dialogues) by 2.0--2.2 BLEU-4 points across model scales, confirming that personalization quality benefits from larger individual corpora.
 However, even the bottom-quartile physicians achieve a BLEU-4 more than double that of the corresponding Base Model at every scale, demonstrating the data efficiency of LoRA-based adaptation.
 
 \subsubsection{SCF Performance Preservation}
