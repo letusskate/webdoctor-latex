@@ -1,4 +1,4 @@
-﻿% !TeX root = ../main.tex
+% !TeX root = ../main.tex
 \appendix
 
 %%%%%%%%%%%%%%%%%%%% my appendix%%%%%%%%%%%%%%%%%%%%%
@@ -7,7 +7,7 @@
 
 \section{LoRA Training Hyperparameters}
 
-Table~\ref{tab:hyperparams} lists the complete hyperparameter configuration used for doctor-specific LoRA training via Unsloth~\cite{unsloth2024}~\cite{weclone}.
+Table~\ref{tab:hyperparams} lists the complete hyperparameter configuration used for doctor-specific LoRA training via Unsloth~\cite{unsloth2024}~\cite{xmingXming521WeClone2026}.
 
 \begin{table}[H]
 \caption{LoRA training hyperparameters.\label{tab:hyperparams}}
@@ -38,7 +38,7 @@ Hardware & 8 $\times$ NVIDIA H20-3e (96GB) \\
 
 \section{LLM Judge Evaluation Protocol}
 
-We adopt Qwen3.6-35B-Instruct as an automated judge following the LLM-as-a-Judge paradigm~\cite{zheng2024judging}. For each test query, the judge receives the generated response together with the target physician's department, specialty description, and three representative historical responses as context. The judge evaluates each response on three dimensions using 5-point Likert scales:
+We adopt Qwen3.6-35B-Instruct as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query, the judge receives the generated response together with the target physician's department, specialty description, and three representative historical responses as context. The judge evaluates each response on three dimensions using 5-point Likert scales:
 
 \begin{itemize}
 \item \textbf{Personalization} (1--5): How well does the response match the target physician's characteristic communication style, terminology preferences, and clinical reasoning patterns?
@@ -132,4 +132,4 @@ The de-identification pipeline consists of three sequential stages:
 
 % \section[\appendixname~\thesection]{}
 
-% All appendix sections must be cited in the main text. In the appendices, figures, tables, etc., should be labeled starting with “A”, e.g., Figure A1, Figure A2, etc.
+% All appendix sections must be cited in the main text. In the appendices, figures, tables, etc., should be labeled starting with ``A'', e.g., Figure A1, Figure A2, etc.

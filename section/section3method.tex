@@ -27,7 +27,7 @@ W + \Delta W = W + B A,
 \end{equation}
 where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times d}$ are trainable low-rank matrices with rank $r \ll d$. During training, only $A$ and $B$ are optimized, while $W$ remains frozen.
 
-We adopt LoRA fine-tuning based on Unsloth~\cite{unsloth2024}~\cite{weclone}, an efficient framework for parameter-efficient fine-tuning that provides optimized kernels for training and inference. For each physician $d_k$, the training objective is the standard causal language modeling loss:
+We adopt LoRA fine-tuning based on Unsloth~\cite{unsloth2024}~\cite{xmingXming521WeClone2026}, an efficient framework for parameter-efficient fine-tuning that provides optimized kernels for training and inference. For each physician $d_k$, the training objective is the standard causal language modeling loss:
 \begin{equation}
 \mathcal{L}_k = -\sum_{t=1}^{T} \log P(r_t^{(k)} \mid q^{(k)}, r_{<t}^{(k)}; \Theta_0 + \Delta \Theta_k).
 \end{equation}
@@ -50,7 +50,7 @@ The selected adapter $\Delta \Theta_{k^*}$ is then applied to the base model, an
 
 \subsection{SCF for Parameter Fusion}
 
-While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF~\cite{yadav2024ties} enables us to fuse multiple adapters into a single merged artifact while minimizing interference. The algorithm proceeds in three stages:
+While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF~\cite{yadavTIESMergingResolvingInterference2023a} enables us to fuse multiple adapters into a single merged artifact while minimizing interference. The algorithm proceeds in three stages:
 
 \textbf{Stage 1: TRIM.} For each parameter in the set of LoRA adapters $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$, we retain only the top-$\tau$ fraction of values by magnitude. This removes small, potentially noisy updates:
 \begin{equation}
