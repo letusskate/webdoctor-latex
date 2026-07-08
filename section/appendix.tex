@@ -50,9 +50,7 @@ For preference assessment, the judge performs pairwise comparisons between all m
 
 \section{SCF Sensitivity Analysis}
 
-Figure~\ref{fig:ties-sensitivity} shows the sensitivity of SCF retention rate to the trim fraction $\tau$ and the number of merged adapters $K$. We observe that retention is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
-
-Table~\ref{tab:ties-sensitivity} provides the numerical results.
+Table~\ref{tab:ties-sensitivity} reports the sensitivity of SCF retention rate to the trim fraction $\tau$ with $K=120$. Retention is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
 
 \begin{table}[H]
 \caption{SCF sensitivity to trim fraction $\tau$ ($K=120$).\label{tab:ties-sensitivity}}
@@ -112,24 +110,3 @@ The de-identification pipeline consists of three sequential stages:
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% template%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \section[\appendixname~\thesection]{}
-% \subsection[\appendixname~\thesubsection]{}
-
-% The appendix is an optional section that can contain details and data supplemental to the main text---for example, explanations of experimental details that would disrupt the flow of the main text but nonetheless remain crucial to understanding and reproducing the research shown; figures of replicates for experiments of which representative data are shown in the main text can be added here if brief, or as Supplementary Materials. Mathematical proofs of results not central to the paper can be added as an appendix.
-
-% \begin{table}[H] 
-% \caption{This is a table caption.\label{tab5}}
-% %\newcolumntype{C}{>{\centering\arraybackslash}X}
-% \begin{tabularx}{\textwidth}{CCC}
-% \toprule
-% \textbf{Title 1}	& \textbf{Title 2}	& \textbf{Title 3}\\
-% \midrule
-% Entry 1		& Data			& Data\\
-% Entry 2		& Data			& Data\\
-% \bottomrule
-% \end{tabularx}
-% \end{table}
-
-% \section[\appendixname~\thesection]{}
-
-% All appendix sections must be cited in the main text. In the appendices, figures, tables, etc., should be labeled starting with ``A'', e.g., Figure A1, Figure A2, etc.
