@@ -14,6 +14,14 @@ We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} data
 
 \textbf{Data Partitioning.} For each physician $d_k$ with at least 50 consultation records, we split their dialogues into training (70\%), validation (15\%), and test (15\%) sets. Physicians with fewer than 50 records are excluded from the personalization experiments but are retained in the dataset for aggregate baseline training. The final dataset used for personalization experiments comprises $K = 120$ physicians with a median of 186 dialogues per physician (range: 50--1,247).
 
+
+
+\textbf{Data Split.} For each physician, dialogues are partitioned chronologically into training (70\%, earliest consultations), validation (15\%), and test (15\%, most recent consultations) sets. The test set comprises a total of 4,522 queries (median 37 per physician, range 8--89). All experiments use random seed 42 for data splitting, model initialization, and training order to ensure reproducibility.
+
+\textbf{Hyperparameter Selection.} LoRA rank $r$ and SCF trim fraction $\tau$ were selected via grid search over $r \in \{4,8,16,32\}$ and $\tau \in \{0.10,0.15,0.20,0.25,0.30,0.40\}$ on the validation set. The optimal configuration ($r=8$, $\tau=0.20$) was then evaluated on the held-out test set.
+
+\textbf{Software Environment.} All experiments were conducted with Unsloth v2024.11, PyTorch 2.4.0, CUDA 12.4, DeepSpeed 0.14.2, and FlashAttention-2 2.6.3 on 8$\times$ NVIDIA H20-3e GPUs.
+
 \subsection{System Architecture}
 
 Our system is implemented as a modular pipeline comprising four stages:

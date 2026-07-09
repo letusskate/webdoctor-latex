@@ -123,7 +123,7 @@ LoRA-Merge-TIES & 6.7 $|$ 10.1 $|$ 13.8 & 14.9 $|$ 20.2 $|$ 26.8 & 0.67 $|$ 0.72
 \setlength{\tabcolsep}{4pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{Human evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. Three board-certified physicians rated 100 queries each on 5-point Likert scales. Preference (\%) is the fraction of blind A/B comparisons favoring the given method.}
+\caption{Human evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. The LLM judge (Qwen3.6-35B-Instruct) rated generated responses on 5-point Likert scales. Preference (\%) is the fraction of blind A/B comparisons favoring the given method.}
 \label{tab:ttft}
 \begin{tabular}{c|ccc|c}
 \toprule
@@ -276,3 +276,5 @@ Deployment & Indiv.\ adapters ($K{=}120$) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 
 \bottomrule
 \end{tabular}
 \end{table}
+% We report BLEU-4 as a complementary lexical overlap metric alongside ROUGE-L and BERTScore; however, we note that BLEU was originally designed for machine translation and may not fully capture the quality of open-ended clinical dialogue generation~\cite{papineni2002bleu}. Our primary automatic metrics are therefore BERTScore and ROUGE-L, with BLEU-4 provided for comparability with prior work.
+

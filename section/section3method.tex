@@ -36,45 +36,48 @@ To prevent overfitting given the limited per-physician data, we apply the follow
 
 \subsection{Doctor-Adaptive Routing (DAR)}
 
-At inference time, the system must select the appropriate LoRA adapter for the target physician. We implement a Doctor-Adaptive Routing (DAR) router that operates in two modes:
+At inference time, the system must select the appropriate LoRA adapter for the target physician. Let $e_k \in \mathbb{R}^{384}$ denote a pre-computed embedding vector encoding physician $d_k$'s communication style profile (derived from their historical responses via Sentence-BERT~\cite{reimers2019sentence}). For a new patient query $q$, we compute its embedding $e_q$ using the same encoder. The DAR router defines a scoring function:
 
-\textbf{Identity-Based Routing.} When the target physician $d_k$ is known (the standard internet hospital scenario where a patient consults a specific doctor), the router directly loads the corresponding adapter $\Delta \Theta_k$ and merges it with the base model for generation.
-
-\textbf{Query-Based Routing.} In scenarios where the optimal physician is not predetermined (e.g., triage or automated preliminary response), the DAR router selects the most appropriate adapter from the candidate set $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$ based on query-adapter relevance. We encode the patient query $q$ and a representative summary of each physician's style using a sentence encoder $E(\cdot)$, and compute cosine similarity:
 \begin{equation}
-k^* = \arg\max_{k} \; \cos\big(E(q),\; E(s_k)\big),
+\text{score}(q, d_k) = \cos(e_q, e_k) = \frac{e_q^\top e_k}{\|e_q\| \cdot \|e_k\|}
 \end{equation}
-where $s_k$ is a textual description of physician $d_k$'s specialty, department, and communication style extracted from their consultation history.
 
-The selected adapter $\Delta \Theta_{k^*}$ is then applied to the base model, and generation proceeds autoregressively. The routing overhead is negligible ($<5$ ms per query) as it involves only a single forward pass through a lightweight encoder followed by a dot-product similarity computation.
+We support two routing modes:
+
+\textbf{Identity-Based Routing.} When the target physician $d_{k^*}$ is known at query time (the standard internet hospital scenario), the router directly selects adapter $k^*$ with zero computational overhead:
+\begin{equation}
+k_{\text{selected}} = k^*
+\end{equation}
+
+\textbf{Query-Based Routing.} When the optimal physician is not predetermined (e.g., triage or automated preliminary response generation), the router retrieves the top-$m$ most similar physicians by cosine similarity to the query embedding:
+\begin{equation}
+\mathcal{K}_m(q) = \underset{k \in \{1,\ldots,K\}}{\text{top-}m}\; \cos(e_q, e_k)
+\end{equation}
+The selected adapter(s) are then applied to the base model for generation. In practice, the FAISS index~\cite{johnson2019faiss} enables sub-millisecond nearest-neighbor retrieval over $K=120$ physician embeddings.
 
 \subsection{SCF for Parameter Fusion}
 
-While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF~\cite{yadavTIESMergingResolvingInterference2023a} enables us to fuse multiple adapters into a single merged artifact while minimizing interference. The algorithm proceeds in three stages:
+While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF fuses multiple adapters into a single merged artifact while minimizing interference. Formally, let $\Delta_k \in \mathbb{R}^{d}$ denote the flattened LoRA parameter delta for physician $d_k$. SCF proceeds in three stages:
 
-\textbf{Stage 1: TRIM.} For each parameter in the set of LoRA adapters $\{\Delta \Theta_1, \ldots, \Delta \Theta_K\}$, we retain only the top-$\tau$ fraction of values by magnitude. This removes small, potentially noisy updates:
+\textbf{Stage 1: Trim.} Low-magnitude parameter changes likely representing noise are reset to zero. For each parameter dimension $j$, we retain only the top $(1-\tau)$ fraction of parameters by magnitude:
 \begin{equation}
-\widetilde{\Delta \Theta}_k = \text{Top}_\tau(\Delta \Theta_k), \quad \forall k \in \{1, \ldots, K\}.
-\end{equation}
-
-\textbf{Stage 2: ELECT SIGN.} For each parameter index $(i,j)$, we compute the aggregate sign across all trimmed adapters:
-\begin{equation}
-\gamma_{ij} = \text{sgn}\left(\sum_{k=1}^{K} \text{sgn}(\widetilde{\Delta \Theta}_{k,ij})\right).
-\end{equation}
-% Only parameters whose individual sign matches the aggregate sign $\gamma_{ij}$ are retained for merging; parameters with conflicting signs are zeroed out, as they represent genuine interference:
-we compute a confidence-weighted aggregation. Parameters whose sign agrees with $\gamma_{ij}$ receive full weight; those with conflicting signs receive a soft penalty proportional to their magnitude relative to the group mean:
-\begin{equation}
-\widehat{\Delta \Theta}_{k,ij} = \begin{cases}
-\widetilde{\Delta \Theta}_{k,ij}, & \text{if } \text{sgn}(\widetilde{\Delta \Theta}_{k,ij}) = \gamma_{ij} \\[4pt]
-\widetilde{\Delta \Theta}_{k,ij} \cdot \exp\left(-\eta \frac{|\widetilde{\Delta \Theta}_{k,ij}|}{\bar{\Delta}_{ij}}\right), & \text{otherwise},
+\Delta_{k,j}^{(1)} = \begin{cases}
+\Delta_{k,j}, & \text{if } |\Delta_{k,j}| \ge \text{Q}_{\tau}(\{|\Delta_{1,j}|,\ldots,|\Delta_{K,j}|\}) \\
+0, & \text{otherwise}
 \end{cases}
 \end{equation}
-where $\bar{\Delta}_{ij} = \frac{1}{K}\sum_{k=1}^K |\widetilde{\Delta \Theta}_{k,ij}|$ is the mean magnitude and $\eta$ controls the penalty strength.
 
-\textbf{Stage 3: MERGE.} The final merged adapter is obtained by averaging the sign-resolved parameters:
+\textbf{Stage 2: Elect Sign.} For each dimension, we resolve sign conflicts via a weighted majority vote with soft sign parameter $\eta \ge 0$:
 \begin{equation}
-\Delta \Theta_{\text{merged}} = \frac{1}{|\mathcal{K}_{ij}|} \sum_{k \in \mathcal{K}_{ij}} \widehat{\Delta \Theta}_{k},
+s_j^* = \operatorname{sign}\!\left(\sum_{k=1}^{K} |\Delta_{k,j}^{(1)}|^{\eta} \cdot \operatorname{sign}(\Delta_{k,j}^{(1)})\right)
 \end{equation}
-where $\mathcal{K}_{ij} = \{k : \widehat{\Delta \Theta}_{k,ij} \neq 0\}$ is the set of adapters contributing to parameter $(i,j)$.
+When $\eta=1$, all deltas contribute equally; as $\eta \to \infty$, only the largest-magnitude delta dominates.
 
-The merged adapter $\Delta \Theta_{\text{merged}}$ can be loaded once and applied to the base model, serving all physicians through a single inference endpoint. Routing at inference time is then performed by conditioning generation on the target physician's identity through a prompt prefix that specifies the doctor's department and communication style, while the merged adapter provides the shared personalized parameter space.
+\textbf{Stage 3: Merge.} Only parameters whose sign agrees with $s_j^*$ are merged. An adaptive trim coefficient $\lambda \in [0,1]$ controls merging aggressiveness:
+\begin{equation}
+\Delta_j^{\text{(merged)}} = \frac{1}{|\mathcal{A}_j|} \sum_{k \in \mathcal{A}_j} \Delta_{k,j}^{(1)},\quad
+\mathcal{A}_j = \{k : \operatorname{sign}(\Delta_{k,j}^{(1)}) = s_j^*\}
+\end{equation}
+
+The merged adapter is applied as $\Theta^{\text{(merged)}} = \Theta_0 + \Delta^{\text{(merged)}}$. Default hyperparameters are $\eta=1.0$, $\lambda=0.5$, and $\tau=0.20$, with sensitivity analyzed in Section~\ref{section:evaluation}.
+
