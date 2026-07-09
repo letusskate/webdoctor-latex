@@ -10,7 +10,7 @@ Large language models (LLMs)~\cite{touvronLlama2Open2023} have demonstrated rema
 
 \begin{figure}[!t]
 \includegraphics[width=\textwidth]{figures/motivation.png}
-\caption{Comparison between our personalized framework and general medical QA AI systems. General-purpose systems employ a single shared model lacking physician-specific adaptation, whereas our framework achieves per-doctor, per-department personalization through LoRA training, DAR routing, and SCF, producing responses closely aligned with individual physicians' clinical communication styles.}
+\caption{From general-purpose AI to doctor-personalized response. The left column (blue) illustrates the limitations of conventional medical QA systems: a single shared model without personalization, routing, or model merging produces generic outputs requiring heavy physician editing. The right column (orange) presents our three-stage framework: per-doctor LoRA adapters capture individual styles, DAR routes to the appropriate physician, and SCF merges adapters into an efficient single deployment---yielding personalized responses that physicians can adopt with minimal modification.}
 \label{fig:comparison}
 \end{figure}   
 \unskip
