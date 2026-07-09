@@ -14,13 +14,13 @@
 % ===== STAGE 1: LoRA Training (x=0) =====
 \node[stagebox] (s1) at (0,0) {Stage 1: Doctor-Specific\\LoRA Training};
 \node[inputbox] (s1-input) at (0,1.8) {Historical consultation data\\(IHDPD dataset)};
-\node[box] (s1-unsloth) at (0,-1.3) {Unsloth LoRA Fine-Tuning};
+\node[box] (s1-LLaMA-Factory) at (0,-1.3) {LLaMA-Factory LoRA Fine-Tuning};
 \node[box] (s1-lora) at (0,-2.4) {LoRA adapters $\Delta\Theta_1,\ldots,\Delta\Theta_K$};
 \node[font=\footnotesize\itshape, text=black!50] at (0,-3.0) {per adapter $<$10 MB};
 
 \draw[arrow] (s1-input) -- (s1);
-\draw[arrow] (s1) -- (s1-unsloth);
-\draw[arrow] (s1-unsloth) -- (s1-lora);
+\draw[arrow] (s1) -- (s1-LLaMA-Factory);
+\draw[arrow] (s1-LLaMA-Factory) -- (s1-lora);
 
 % ===== Stage 2: DAR Routing (x=4.8) =====
 \node[stagebox] (s2) at (4.8,0) {Stage 2: DAR\\Doctor-Adaptive Routing};
@@ -64,6 +64,6 @@
 \node[font=\footnotesize] at (4.8,-6.3) {Stage 1 (offline)~~$\longrightarrow$~~Stage 2 (online inference)~~$\longrightarrow$~~Stage 3 (offline fusion)~~$\longrightarrow$~~Single-endpoint multi-doctor deployment};
 
 \end{tikzpicture}
-\caption{Overview of the three-stage personalized adaptation framework. Stage~1: Doctor-specific LoRA adapters are trained offline via Unsloth LoRA fine-tuning using each physician's historical consultation records. Stage~2: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. Stage~3: SCF (TRIM $\rightarrow$ ELECT SIGN $\rightarrow$ MERGE) fuses multiple doctor-specific adapters into a single unified deployment artifact, enabling efficient multi-physician serving through a single inference endpoint.}
+\caption{Overview of the three-stage personalized adaptation framework. Stage~1: Doctor-specific LoRA adapters are trained offline via LLaMA-Factory LoRA fine-tuning using each physician's historical consultation records. Stage~2: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. Stage~3: SCF (TRIM $\rightarrow$ ELECT SIGN $\rightarrow$ MERGE) fuses multiple doctor-specific adapters into a single unified deployment artifact, enabling efficient multi-physician serving through a single inference endpoint.}
 \label{fig:method-overview}
 \end{figure}
