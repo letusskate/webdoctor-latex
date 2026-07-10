@@ -17,9 +17,9 @@ We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} data
 
 \textbf{Hyperparameter Selection.} LoRA rank $r$ and SCF trim fraction $\tau$ were selected via grid search over $r \in \{4,8,16,32\}$ and $\tau \in \{0.10,0.15,0.20,0.25,0.30,0.40\}$ on the validation set. The optimal configuration ($r=8$, $\tau=0.20$) was then evaluated on the held-out test set.
 
-\subsection{System Architecture}
+\subsection{System Implementation Details}
 
-Our system is implemented as a modular pipeline comprising four stages:
+The WebDoctor service is implemented as a modular pipeline comprising four stages:
 
 \textbf{Stage 1: Data Ingestion and Preprocessing.} Raw consultation records are streamed through the de-identification pipeline, tokenized using the base model's tokenizer, and formatted into instruction-following templates that include the patient query, physician department, and expected response format. The preprocessing stage handles batching, shuffling, and dynamic padding using standard data utilities~\cite{zheng2024llamafactory}.
 
