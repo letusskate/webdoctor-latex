@@ -69,36 +69,39 @@ Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF retention rate to
 \end{tabularx}
 \end{table}
 
-\section{Department-Level Performance Breakdown}
+\section{Department-Level Dataset Breakdown}
 
-Table~\ref{tab:dept-breakdown} reports the BLEU-4 scores of the full system broken down by clinical department.
+Table~\ref{tab:dept-breakdown} reports the distribution of physicians and dialogue messages across 15 broad clinical categories in the IHDPD dataset.
 
 \begin{table}[H]
-\caption{Per-department BLEU-4 scores (Full System).\label{tab:dept-breakdown}}
+\caption{IHDPD dataset breakdown by broad clinical category.\label{tab:dept-breakdown}}
 \begin{tabularx}{\textwidth}{lCC}
 \toprule
-\textbf{Department} & \textbf{Num.\ Doctors} & \textbf{BLEU-4} \\
+\textbf{Department} & \textbf{Num.\ Doctors} & \textbf{Messages} \\
 \midrule
-Internal Medicine & 24 & 10.8 \\
-Cardiology & 14 & 10.3 \\
-Dermatology & 11 & 11.2 \\
-Pediatrics & 10 & 9.7 \\
-Obstetrics \& Gynecology & 9 & 10.1 \\
-Orthopedics & 8 & 9.5 \\
-Neurology & 8 & 10.4 \\
-Gastroenterology & 7 & 10.6 \\
-Endocrinology & 6 & 9.9 \\
-Psychiatry & 5 & 8.8 \\
-Ophthalmology & 5 & 10.2 \\
-Otolaryngology & 4 & 9.6 \\
-Urology & 4 & 10.0 \\
-Respiratory Medicine & 3 & 10.5 \\
-General Surgery & 2 & 9.3 \\
+Psychiatry & 119 & 91,941 \\
+Orthopedics & 60 & 22,109 \\
+Neurology & 82 & 21,534 \\
+Internal Medicine & 87 & 17,928 \\
+Cardiology & 70 & 17,406 \\
+Obstetrics \& Gynecology & 51 & 16,214 \\
+Gastroenterology & 42 & 10,512 \\
+Respiratory Medicine & 15 & 5,283 \\
+Dermatology & 28 & 4,749 \\
+General Surgery & 33 & 3,462 \\
+Pediatrics & 19 & 3,277 \\
+Endocrinology & 5 & 2,210 \\
+Otolaryngology & 17 & 2,202 \\
+Urology & 8 & 695 \\
+Ophthalmology & 12 & 408 \\
+\midrule
+\rowcolor{blue!5}
+\textbf{Total} & \textbf{766} & \textbf{262,263} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-We observe that departments with more doctors and larger per-doctor training sets (e.g., Internal Medicine, Dermatology) tend to achieve higher personalization scores, while smaller departments (e.g., Psychiatry, General Surgery) show somewhat lower performance, consistent with the data-efficiency characteristics of LoRA training.
+We observe that psychiatric departments account for a substantial share of the dataset (91,941 messages, 35.0\%), reflecting the strong suitability of text-based remote consultations for mental health care delivery. Orthopedics, neurology, and internal medicine also contribute large volumes, while surgical and procedure-oriented departments (e.g., ophthalmology, urology) generate fewer text-based messages due to their reliance on in-person examinations.
 
 \section{De-identification Pipeline Details}
 
