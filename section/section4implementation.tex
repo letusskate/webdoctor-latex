@@ -15,8 +15,6 @@ We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} data
 \textbf{Data Partitioning.} For each physician, dialogue windows are partitioned chronologically into training (70\%, earliest consultations), validation (15\%), and test (15\%, most recent consultations) sets. The training set comprises 20,149 dialogue windows ($\sim$216,000 individual messages) from 415 physicians, while the held-out test set contains 2,059 windows ($\sim$22,000 messages) from 351 physicians. All experiments use random seed 42 for data splitting, model initialization, and training order to ensure reproducibility.
 
 
-\textbf{Hyperparameter Selection.} LoRA rank $r$ and SCF trim fraction $\tau$ were selected via grid search over $r \in \{4,8,16,32\}$ and $\tau \in \{0.10,0.15,0.20,0.25,0.30,0.40\}$ on the validation set. The optimal configuration ($r=8$, $\tau=0.20$) was then evaluated on the held-out test set.
-
 \subsection{System Implementation Details}
 
 The WebDoctor service is implemented as a modular pipeline comprising four stages:

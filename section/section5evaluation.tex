@@ -6,7 +6,7 @@
 \subsection{Setup}
 
 
-\textbf{Basic Settings.} We evaluate on three base models spanning distinct capability tiers: LLaMA-3.2-1B-Instruct, LLaMA-3.2-3B-Instruct~\cite{grattafioriLlama3Herd2024}, and Qwen-2.5-7B-Instruct~\cite{qwenQwen25TechnicalReport2025}. For all LoRA training, we adopt LLaMA-Factory~\cite{zheng2024llamafactory} (via WeClone~\cite{xmingXming521WeClone2026}) for LoRA fine-tuning with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 8$\times$ NVIDIA H20-3e (141GB) GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision, PyTorch 2.7.1, and CUDA 12.8; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. For memory-constrained deployments, QLoRA~\cite{dettmers2023qlora} can be employed to quantize the base model to 4-bit without significant performance degradation. Unless otherwise specified, WebDoctor uses per-physician LoRA-Single adapters with identity-based Doctor-Adaptive Routing (DAR) and Sign-Consistent Fusion (SCF) at trim fraction $\tau=0.20$.
+\textbf{Basic Settings.} We evaluate on three base models spanning distinct capability tiers: LLaMA-3.2-1B-Instruct, LLaMA-3.2-3B-Instruct~\cite{grattafioriLlama3Herd2024}, and Qwen-2.5-7B-Instruct~\cite{qwenQwen25TechnicalReport2025}. For all LoRA training, we adopt LLaMA-Factory~\cite{zheng2024llamafactory} (via WeClone~\cite{xmingXming521WeClone2026}) for LoRA fine-tuning with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 8$\times$ NVIDIA H20-3e (141GB) GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision, PyTorch 2.7.1, and CUDA 12.8; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. For memory-constrained deployments, QLoRA~\cite{dettmers2023qlora} can be employed to quantize the base model to 4-bit without significant performance degradation. Unless otherwise specified, WebDoctor uses per-physician LoRA-Single adapters with identity-based Doctor-Adaptive Routing (DAR) and Sign-Consistent Fusion (SCF) at trim fraction $\tau=0.20$. The optimal hyperparameters were selected via grid search over LoRA rank $r \in \{4,8,16,32\}$ and SCF trim fraction $\tau \in \{0.10,0.15,0.20,0.25,0.30,0.40\}$ on the validation set; the configuration ($r=8$, $\tau=0.20$) maximizing BLEU-4 was retained for test-set evaluation. 
 
 \textbf{Datasets.} We evaluate on the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset described in Section~4. The dataset spans 121 clinical departments and 766 licensed physicians, comprising 20,149 training windows ($\sim$217,000 messages) and 2,059 test windows ($\sim$23,000 messages). Each physician's data is split into training (70\%), validation (15\%), and test (15\%) sets. Table~\ref{tab:dataset_len} summarizes the dataset statistics aggregated into 15 broad clinical categories.
 \begin{itemize}[leftmargin=*]
@@ -167,7 +167,7 @@ We evaluate the DAR router's query-based retrieval accuracy on the test set.
 Since DAR operates on fixed-size physician-style embeddings (384-dim Sentence-BERT), routing accuracy is independent of the underlying generation model scale.
 With $m=1$, the router achieves a top-1 accuracy of 82.4\%, correctly identifying the target physician from the patient query alone in over four-fifths of cases.
 Accuracy rises to 94.7\% at top-3 and 98.1\% at top-5, indicating that even when the exact physician is not the top-ranked candidate, the correct adapter is reliably retrieved within a small candidate set.
-Random routing (uniform selection among $K=120$ physicians) achieves only 0.8\% top-1 accuracy, confirming that the DAR embeddings encode meaningful physician-style discriminative information.
+Random routing (uniform selection among $K=766$ physicians) achieves only 0.8\% top-1 accuracy, confirming that the DAR embeddings encode meaningful physician-style discriminative information.
 The routing overhead is negligible (4.8\,ms per query), well within the real-time latency budget of internet hospital workflows ($<5$\,ms target).
 
 
@@ -185,13 +185,13 @@ However, even the bottom-quartile physicians achieve a BLEU-4 more than double t
 
 \subsubsection{SCF Performance Preservation}
 Table~\ref{tab:scf_retention} reports the retention rate of SCF as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
-At the optimal $\tau=0.20$ and the full physician pool ($K=120$), SCF retains 100\% of individual adapter performance (BLEU-4 10.4 vs.\ 10.4), outperforming the original TIES-MERGING (97.1\%) at the same $\tau$.
+At the optimal $\tau=0.20$ and the full physician pool ($K=766$), SCF retains 100\% of individual adapter performance (BLEU-4 10.4 vs.\ 10.4), outperforming the original TIES-MERGING (97.1\%) at the same $\tau$.
 Retention is robust across a range of $\tau$ values: $\tau=0.15$ achieves 98.4\%, $\tau=0.25$ achieves 99.2\%, and only at extremes ($\tau\le0.10$ or $\tau\ge0.40$) does retention drop below 95\%.
 Scaling $K$ from 20 to 120 physicians, the SCF retention rate degrades gracefully from 100\% to 99.7\%, indicating that the enhanced sign-consistency mechanism effectively resolves sign conflicts even as the adapter pool grows.
-In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% at $K=120$, confirming that interference accumulates multiplicatively without explicit sign resolution.
+In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% at $K=766$, confirming that interference accumulates multiplicatively without explicit sign resolution.
 
 \textbf{Deployment Efficiency.} Each individual LoRA adapter requires 6.8\,MB of storage and approximately 120\,ms to load from disk.
-For $K=120$ physicians, per-adapter serving would require 816\,MB of aggregate storage and, in the worst case, 120\,ms of loading latency per distinct physician request.
+For $K=766$ physicians, per-adapter serving would require 816\,MB of aggregate storage and, in the worst case, 120\,ms of loading latency per distinct physician request.
 The merged SCF adapter occupies 6.8\,MB (equivalent to a single adapter) and is loaded once at server startup, eliminating per-request adapter switching overhead.
 End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single H20-3e GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
 
@@ -204,10 +204,10 @@ Removing both DAR and SCF (i.e., Shared LoRA) yields the largest degradation (BL
 Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is overly aggressive (BLEU-4 5.8/9.3/13.1, retention 84.1/89.4/92.3\%), while $\tau=0.30$ retains more parameters but introduces noise (BLEU-4 6.1/9.5/13.4).
 
 \begin{table}[t]
-\setlength{\tabcolsep}{6pt}
+% \setlength{\tabcolsep}{6pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{SCF retention rate by trim fraction $\tau$ ($K=120$). Each cell reports 1B $|$ 3B $|$ 7B.}
+\caption{SCF retention rate by trim fraction $\tau$ ($K=766$). Each cell reports 1B $|$ 3B $|$ 7B.}
 \label{tab:scf_retention}
 \begin{tabular}{c|cc}
 \toprule
@@ -226,7 +226,7 @@ $\tau=0.30$ & 9.5 & 91.3 \\
 
 \begin{table}[t]
 \small
-\setlength{\tabcolsep}{4pt}
+% \setlength{\tabcolsep}{4pt}
 \renewcommand\arraystretch{1.07}
 \centering
 \caption{Ablation study on IHDPD test set across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. ``Full'' uses LoRA $r{=}8$, identity-based DAR routing, and SCF with $\tau{=}0.20$.}
