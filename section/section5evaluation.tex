@@ -10,9 +10,9 @@
 
 \textbf{Datasets.} We evaluate on the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset described in Section~4. The dataset spans 121 clinical departments and 766 licensed physicians, comprising 20,149 training windows ($\sim$217,000 messages) and 2,059 test windows ($\sim$23,000 messages). Each physician's data is split into training (70\%), validation (15\%), and test (15\%) sets. Table~\ref{tab:dataset_len} summarizes the dataset statistics aggregated into 15 broad clinical categories.
 \begin{itemize}[leftmargin=*]
-    \item \textbf{High-resource departments}: Internal Medicine (24 physicians, 4,821 dialogues), Cardiology (14 physicians, 2,953 dialogues), Dermatology (11 physicians, 2,374 dialogues).
-    \item \textbf{Medium-resource departments}: Pediatrics (10 physicians, 2,018 dialogues), Obstetrics \& Gynecology (9 physicians, 1,826 dialogues), Orthopedics and Neurology (8 physicians each, 1,597 and 1,623 dialogues).
-    \item \textbf{Low-resource departments}: Psychiatry (5 physicians, 912 dialogues), Ophthalmology (5 physicians, 1,041 dialogues), Otolaryngology and Urology (4 physicians each), Respiratory Medicine (3 physicians), General Surgery (2 physicians).
+    \item \textbf{High-resource departments} (\(>\)15,000 messages): Psychiatry (119 physicians, 91,941 messages), Orthopedics (60 physicians, 22,109 messages), Neurology (82 physicians, 21,534 messages), Internal Medicine (87 physicians, 17,928 messages), Cardiology (70 physicians, 17,406 messages), Obstetrics \& Gynecology (51 physicians, 16,214 messages).
+    \item \textbf{Medium-resource departments} (2,000--15,000 messages): Gastroenterology (42 physicians, 10,512 messages), Respiratory Medicine (15 physicians, 5,283 messages), Dermatology (28 physicians, 4,749 messages), General Surgery (33 physicians, 3,462 messages), Pediatrics (19 physicians, 3,277 messages), Endocrinology (5 physicians, 2,210 messages), Otolaryngology (17 physicians, 2,202 messages).
+    \item \textbf{Low-resource departments} (\(<\)2,000 messages): Urology (8 physicians, 695 messages), Ophthalmology (12 physicians, 408 messages).
 \end{itemize}
 
 \textbf{Baselines.}
