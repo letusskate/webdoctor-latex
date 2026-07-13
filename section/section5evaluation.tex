@@ -8,12 +8,7 @@
 
 \textbf{Basic Settings.} We evaluate on three base models spanning distinct capability tiers: LLaMA-3.2-1B-Instruct, LLaMA-3.2-3B-Instruct~\cite{grattafioriLlama3Herd2024}, and Qwen-2.5-7B-Instruct~\cite{qwenQwen25TechnicalReport2025}. For all LoRA training, we adopt LLaMA-Factory~\cite{zheng2024llamafactory} (via WeClone~\cite{xmingXming521WeClone2026}) for LoRA fine-tuning with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 8$\times$ NVIDIA H20-3e (141GB) GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision, PyTorch 2.7.1, and CUDA 12.8; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. For memory-constrained deployments, QLoRA~\cite{dettmers2023qlora} can be employed to quantize the base model to 4-bit without significant performance degradation. Unless otherwise specified, WebDoctor uses per-physician LoRA-Single adapters with identity-based Doctor-Adaptive Routing (DAR) and Sign-Consistent Fusion (SCF) at trim fraction $\tau=0.20$. The optimal hyperparameters are selected via grid search over LoRA rank $r \in \{4,8,16,32\}$ and SCF trim fraction $\tau \in \{0.10,0.15,0.20,0.25,0.30,0.40\}$ on the validation set; the configuration ($r=8$, $\tau=0.20$) maximizing BLEU-4 is retained for test-set evaluation. 
 
-\textbf{Datasets.} We evaluate on the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset described in Section~4. The dataset spans 121 clinical departments and 766 licensed physicians, comprising 20,149 training windows ($\sim$217,000 messages) and 2,059 test windows ($\sim$23,000 messages). Each physician's data is split into training (70\%), validation (15\%), and test (15\%) sets. Table~\ref{tab:dataset_len} summarizes the dataset statistics aggregated into 15 broad clinical categories.
-\begin{itemize}[leftmargin=*]
-    \item \textbf{High-resource departments} (\(>\)15,000 messages): Psychiatry (119 physicians, 91,941 messages), Orthopedics (60 physicians, 22,109 messages), Neurology (82 physicians, 21,534 messages), Internal Medicine (87 physicians, 17,928 messages), Cardiology (70 physicians, 17,406 messages), Obstetrics \& Gynecology (51 physicians, 16,214 messages).
-    \item \textbf{Medium-resource departments} (2,000--15,000 messages): Gastroenterology (42 physicians, 10,512 messages), Respiratory Medicine (15 physicians, 5,283 messages), Dermatology (28 physicians, 4,749 messages), General Surgery (33 physicians, 3,462 messages), Pediatrics (19 physicians, 3,277 messages), Endocrinology (5 physicians, 2,210 messages), Otolaryngology (17 physicians, 2,202 messages).
-    \item \textbf{Low-resource departments} (\(<\)2,000 messages): Urology (8 physicians, 695 messages), Ophthalmology (12 physicians, 408 messages).
-\end{itemize}
+\textbf{Datasets.} We evaluate on the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset described in Section~4. The dataset spans 121 clinical departments and 766 licensed physicians, comprising 20,149 training windows ($\sim$217,000 messages) and 2,059 test windows ($\sim$23,000 messages). Each physician's data is split into training (70\%), validation (15\%), and test (15\%) sets. A departmental breakdown is provided in Table~\ref{tab:dept-breakdown} of \cref{section:implementation}.
 
 \textbf{Baselines.}
 We compare against the following personalization and adapter-merging baselines:
@@ -49,48 +44,15 @@ The \emph{Retention Rate} quantifies how much of the individual adapter's perfor
 \mathrm{Retention} = \frac{\mathrm{BLEU\text{-}4}_{\mathrm{merged}}}{\mathrm{BLEU\text{-}4}_{\mathrm{single}}} \times 100\%.
 \end{equation}
 
-(2)~\textbf{LLM-as-a-Judge evaluation.} We adopt Qwen3.6-35B-Instruct (based on the Qwen architecture~\cite{qwenQwen25TechnicalReport2025}) as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query $q$ directed to physician $d_k$, the judge receives the generated response $\hat{r}$ together with the physician's department, specialty description, and a representative sample of their historical responses. It produces three 5-point Likert ratings:
+(2)~\textbf{LLM-as-a-Judge evaluation.} We adopt Qwen3.6-35B~\cite{qwen36_35b_a3b} as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query $q$ directed to physician $d_k$, the judge receives the generated response $\hat{r}$ together with the physician's department, specialty description, and a representative sample of their historical responses. It produces three 5-point Likert ratings:
 \emph{Personalization}---stylistic and terminological fidelity to physician $d_k$; \emph{Clinical Accuracy}---medical correctness and appropriateness; and \emph{Fluency}---grammaticality and naturalness. We also record pairwise preference judgments (method A vs.\ method B) via the same judge. Formally:
 \begin{equation}
 \mathrm{Score}_{\mathrm{dim}}(\hat{r}) = \mathrm{Qwen}_{3.6\text{-}35\mathrm{B}}\big(q, \hat{r}, d_k, \mathrm{dim}\big) \in \{1,2,3,4,5\},
 \end{equation}
 where $\mathrm{dim}\in\{\text{Personalization}, \text{Clinical Accuracy}, \text{Fluency}\}$. All experiments are repeated across three random seeds; we report mean values. The main accuracy differences between WebDoctor and the best baseline are statistically significant at $p<0.01$ (paired bootstrap test, 10,000 resamples).
 
-(3)~\textbf{Deployment efficiency}: per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response).
-(3)~Deployment efficiency: per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response). For merged-adapter deployments, we additionally report the \emph{Retention Rate}---the ratio of the merged adapter's BLEU-4 to that of the individual LoRA-Single adapter, expressed as a percentage.
-
-\begin{table}[t]
-\small
-\setlength{\tabcolsep}{6pt}
-\renewcommand\arraystretch{1.05}
-\centering
-\caption{IHDPD dataset overview by clinical department.}
-\label{tab:dataset_len}
-\begin{tabular}{c|cccc}
-\toprule
-\textbf{Department} & \textbf{\# Physicians} & \textbf{\# Dialogues} & \textbf{Avg. Turns} & \textbf{Avg. Query Len.}\\
-\midrule
-Internal Medicine & 24 & 4,821 & 6.2 & 48 \\
-Cardiology & 14 & 2,953 & 5.8 & 51 \\
-Dermatology & 11 & 2,374 & 5.1 & 44 \\
-Pediatrics & 10 & 2,018 & 6.5 & 39 \\
-Obstetrics \& Gynecology & 9 & 1,826 & 5.4 & 46 \\
-Orthopedics & 8 & 1,597 & 5.9 & 52 \\
-Neurology & 8 & 1,623 & 6.1 & 55 \\
-Gastroenterology & 7 & 1,405 & 5.7 & 49 \\
-Endocrinology & 6 & 1,212 & 5.3 & 47 \\
-Psychiatry & 5 & 912 & 7.3 & 58 \\
-Ophthalmology & 5 & 1,041 & 5.0 & 43 \\
-Otolaryngology & 4 & 823 & 5.5 & 41 \\
-Urology & 4 & 803 & 5.2 & 46 \\
-Respiratory Medicine & 3 & 606 & 6.0 & 50 \\
-General Surgery & 2 & 411 & 5.8 & 47 \\
-\midrule
-\rowcolor{blue!5}
-\textbf{Total/Avg.} & \textbf{120} & \textbf{22,208} & \textbf{5.8} & \textbf{48.5} \\
-\bottomrule
-\end{tabular}
-\end{table}
+(3)~\textbf{Deployment efficiency}: We measure per-adapter storage footprint (MB), adapter loading latency (ms), and end-to-end inference latency (seconds per response).
+% \emph{Retention Rate} for merged-adapter deployments---the ratio of the merged adapter's BLEU-4 to that of the individual LoRA-Single adapter, expressed as a percentage---is reported in the SCF analysis.
 
 \begin{table*}[!t]
 \footnotesize
@@ -123,7 +85,7 @@ LoRA-Merge-TIES & 6.7 $|$ 10.1 $|$ 13.8 & 14.9 $|$ 20.2 $|$ 26.8 & 0.67 $|$ 0.72
 \setlength{\tabcolsep}{4pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{LLM evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. The LLM judge (Qwen3.6-35B-Instruct) rated generated responses on 5-point Likert scales. Preference (\%) is the fraction of blind A/B comparisons favoring the given method.}
+\caption{LLM evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. The LLM judge (Qwen3.6-35B) rated generated responses on 5-point Likert scales. Preference (\%) is the fraction of blind A/B comparisons favoring the given method.}
 \label{tab:ttft}
 \begin{tabular}{c|ccc|c}
 \toprule
@@ -167,7 +129,7 @@ We evaluate the DAR router's query-based retrieval accuracy on the test set.
 Since DAR operates on fixed-size physician-style embeddings (384-dim Sentence-BERT), routing accuracy is independent of the underlying generation model scale.
 With $m=1$, the router achieves a top-1 accuracy of 82.4\%, correctly identifying the target physician from the patient query alone in over four-fifths of cases.
 Accuracy rises to 94.7\% at top-3 and 98.1\% at top-5, indicating that even when the exact physician is not the top-ranked candidate, the correct adapter is reliably retrieved within a small candidate set.
-Random routing (uniform selection among $K=766$ physicians) achieves only 0.8\% top-1 accuracy, confirming that the DAR embeddings encode meaningful physician-style discriminative information.
+Random routing (uniform selection among $K=120$ physicians in the evaluation subset) achieves only 0.8\% top-1 accuracy, confirming that the DAR embeddings encode meaningful physician-style discriminative information.
 The routing overhead is negligible (4.8\,ms per query), well within the real-time latency budget of internet hospital workflows ($<5$\,ms target).
 
 
@@ -183,25 +145,6 @@ We further examine the relationship between per-physician training set size and 
 Physicians in the top quartile by dialogue count ($\ge 288$ dialogues) outperform those in the bottom quartile ($\le 98$ dialogues) by 2.0--2.2 BLEU-4 points across model scales, confirming that personalization quality benefits from larger individual corpora.
 However, even the bottom-quartile physicians achieve a BLEU-4 more than double that of the corresponding Base Model at every scale, demonstrating the data efficiency of LoRA-based adaptation.
 
-\subsubsection{SCF Performance Preservation}
-Table~\ref{tab:scf_retention} reports the retention rate of SCF as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
-At the optimal $\tau=0.20$ and the full physician pool ($K=766$), SCF retains 100\% of individual adapter performance (BLEU-4 10.4 vs.\ 10.4), outperforming the original TIES-MERGING (97.1\%) at the same $\tau$.
-Retention is robust across a range of $\tau$ values: $\tau=0.15$ achieves 98.4\%, $\tau=0.25$ achieves 99.2\%, and only at extremes ($\tau\le0.10$ or $\tau\ge0.40$) does retention drop below 95\%.
-Scaling $K$ from 20 to 120 physicians, the SCF retention rate degrades gracefully from 100\% to 99.7\%, indicating that the enhanced sign-consistency mechanism effectively resolves sign conflicts even as the adapter pool grows.
-In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% at $K=766$, confirming that interference accumulates multiplicatively without explicit sign resolution.
-
-\textbf{Deployment Efficiency.} Each individual LoRA adapter requires 6.8\,MB of storage and approximately 120\,ms to load from disk.
-For $K=766$ physicians, per-adapter serving would require 816\,MB of aggregate storage and, in the worst case, 120\,ms of loading latency per distinct physician request.
-The merged SCF adapter occupies 6.8\,MB (equivalent to a single adapter) and is loaded once at server startup, eliminating per-request adapter switching overhead.
-End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single H20-3e GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
-
-\subsubsection{Ablation Study}
-We ablate the key design choices of WebDoctor, reporting BLEU-4 and LLM-evaluated personalization scores (5-point scale) across all three model scales.
-Table~\ref{tab:ablation} (bottom block) presents the results.
-Removing the DAR router and relying solely on a generic prompt prefix (``w/o DAR'') causes a moderate drop across scales (BLEU-4 6.4/10.2/13.9, personalization 3.0/4.0/4.4), confirming that explicit physician identity conditioning via adaptive routing is important for stylistic fidelity.
-Disabling SCF and serving individual adapters (``w/o SCF'') preserves full personalization quality but at the cost of $K$-fold storage and loading overhead, as discussed above.
-Removing both DAR and SCF (i.e., Shared LoRA) yields the largest degradation (BLEU-4 5.1/7.8/11.3, personalization 1.9/2.8/3.4), confirming that both components contribute independently and additively to personalization quality.
-Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is overly aggressive (BLEU-4 5.8/9.3/13.1, retention 84.1/89.4/92.3\%), while $\tau=0.30$ retains more parameters but introduces noise (BLEU-4 6.1/9.5/13.4).
 
 \begin{table}[t]
 % \setlength{\tabcolsep}{6pt}
@@ -218,11 +161,23 @@ $\tau=0.15$ & 6.4 $|$ 10.2 $|$ 13.8 & 92.8 $|$ 98.4 $|$ 97.2 \\
 \rowcolor{blue!5}
 $\tau=0.20$ (ours) & \textbf{6.9} $|$ \textbf{10.4} $|$ \textbf{14.2} & \textbf{100} $|$ \textbf{100} $|$ \textbf{100} \\
 $\tau=0.25$ & 6.7 $|$ 10.2 $|$ 14.1 & 97.1 $|$ 98.1 $|$ 99.3 \\
-$\tau=0.30$ & 6.5 $|$ 9.8 $|$ 13.8 & 94.2 $|$ 94.2 $|$ 97.2 \\
-$\tau=0.30$ & 9.5 & 91.3 \\
+$\tau=0.30$ & 6.1 $|$ 9.5 $|$ 13.4 & 88.4 $|$ 91.3 $|$ 94.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsubsection{SCF Performance Preservation}
+Table~\ref{tab:scf_retention} reports the retention rate of SCF as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
+At the optimal $\tau=0.20$ and the full physician pool ($K=766$), SCF retains 100\% of individual adapter performance (BLEU-4 10.4 vs.\ 10.4), outperforming the original TIES-MERGING (97.1\%) at the same $\tau$.
+Retention is robust across a range of $\tau$ values: $\tau=0.15$ achieves 98.4\%, $\tau=0.25$ achieves 99.2\%, and only at extremes ($\tau\le0.10$ or $\tau\ge0.40$) does retention drop below 95\%.
+Scaling $K$ from 20 to 120 physicians, the SCF retention rate degrades gracefully from 100\% to 99.7\%, indicating that the enhanced sign-consistency mechanism effectively resolves sign conflicts even as the adapter pool grows.
+In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% at $K=766$, confirming that interference accumulates multiplicatively without explicit sign resolution.
+
+\textbf{Deployment Efficiency.} Each individual LoRA adapter requires 6.8\,MB of storage and approximately 120\,ms to load from disk.
+For $K=766$ physicians, per-adapter serving would require 816\,MB of aggregate storage and, in the worst case, 120\,ms of loading latency per distinct physician request.
+The merged SCF adapter occupies 6.8\,MB (equivalent to a single adapter) and is loaded once at server startup, eliminating per-request adapter switching overhead.
+End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single H20-3e GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
+
 
 \begin{table}[t]
 \small
@@ -254,10 +209,6 @@ Full & \cellcolor{blue!5}\textbf{WebDoctor} & \cellcolor{blue!5}\textbf{6.9} $|$
 \multirow{2}{*}{SCF trim $\tau$} & $\tau=0.10$ & 5.8 $|$ 9.3 $|$ 13.1 & 2.4 $|$ 3.5 $|$ 4.0 \\
  & $\tau=0.30$ & 6.1 $|$ 9.5 $|$ 13.4 & 2.6 $|$ 3.7 $|$ 4.1 \\
 \midrule
-Component removal & w/o DAR (prompt only) & 6.4 $|$ 10.2 $|$ 13.9 & 3.0 $|$ 4.0 $|$ 4.4 \\
-\midrule
- & w/o SCF (individual) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
-\midrule
 % \midrule
 SCF soft sign $\eta$ & $\eta=0.5$ & 6.8 $|$ 10.2 $|$ 13.9 & 3.1 $|$ 4.1 $|$ 4.4 \\
  & $\eta=1.0$ (ours) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
@@ -276,5 +227,14 @@ Deployment & Indiv.\ adapters ($K{=}120$) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsubsection{Ablation Study}
+We ablate the key design choices of WebDoctor, reporting BLEU-4 and LLM-evaluated personalization scores (5-point scale) across all three model scales.
+Table~\ref{tab:ablation} (bottom block) presents the results.
+Removing the DAR router and relying solely on a generic prompt prefix (``w/o DAR'') causes a moderate drop across scales (BLEU-4 6.4/10.2/13.9, personalization 3.0/4.0/4.4), confirming that explicit physician identity conditioning via adaptive routing is important for stylistic fidelity.
+Removing both DAR and SCF (i.e., Shared LoRA) yields the largest degradation (BLEU-4 5.1/7.8/11.3, personalization 1.9/2.8/3.4), confirming that both components contribute independently and additively to personalization quality.
+Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is overly aggressive (BLEU-4 5.8/9.3/13.1, retention 84.1/89.4/92.3\%), while $\tau=0.30$ retains more parameters but introduces noise (BLEU-4 6.1/9.5/13.4).
+
+
 % We report BLEU-4 as a complementary lexical overlap metric alongside ROUGE-L and BERTScore; however, we note that BLEU was originally designed for machine translation and may not fully capture the quality of open-ended clinical dialogue generation~\cite{papineni2002bleu}. Our primary automatic metrics are therefore BERTScore and ROUGE-L, with BLEU-4 provided for comparability with prior work.
 

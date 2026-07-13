@@ -38,7 +38,7 @@ Hardware & 8 $\times$ NVIDIA H20-3e (141GB) \\
 
 \section{LLM Judge Evaluation Protocol}
 
-We adopt Qwen3.6-35B-Instruct as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query, the judge receives the generated response together with the target physician's department, specialty description, and three representative historical responses as context. The judge evaluates each response on three dimensions using 5-point Likert scales:
+We adopt Qwen3.6-35B as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query, the judge receives the generated response together with the target physician's department, specialty description, and three representative historical responses as context. The judge evaluates each response on three dimensions using 5-point Likert scales:
 
 \begin{itemize}
 \item \textbf{Personalization} (1--5): How well does the response match the target physician's characteristic communication style, terminology preferences, and clinical reasoning patterns?
@@ -47,7 +47,7 @@ We adopt Qwen3.6-35B-Instruct as an automated judge following the LLM-as-a-Judge
 \end{itemize}
 
 For preference assessment, the judge performs pairwise comparisons between all method pairs. Self-consistency is evaluated by repeating each judgment three times with different prompt orderings; the majority vote is taken as the final preference. The judge achieves a self-consistency rate of 94.2\%, indicating high reliability. 
-% We note that Qwen3.6-35B-Instruct belongs to the same model family as one of our evaluated base models (Qwen-2.5-7B-Instruct), which may introduce a self-preference bias. To mitigate this, we evaluate all methods---including the Qwen-2.5-7B-based variants---under identical judge configurations and report relative improvements rather than absolute scores as the primary comparison metric.
+% We note that Qwen3.6-35B belongs to the same model family as one of our evaluated base models (Qwen-2.5-7B-Instruct), which may introduce a self-preference bias. To mitigate this, we evaluate all methods---including the Qwen-2.5-7B-based variants---under identical judge configurations and report relative improvements rather than absolute scores as the primary comparison metric.
 
 \section{SCF Sensitivity Analysis}
 
@@ -69,39 +69,6 @@ Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF retention rate to
 \end{tabularx}
 \end{table}
 
-\section{Department-Level Dataset Breakdown}
-
-Table~\ref{tab:dept-breakdown} reports the distribution of physicians and dialogue messages across 15 broad clinical categories in the IHDPD dataset.
-
-\begin{table}[H]
-\caption{IHDPD dataset breakdown by broad clinical category.\label{tab:dept-breakdown}}
-\begin{tabularx}{\textwidth}{lCC}
-\toprule
-\textbf{Department} & \textbf{Num.\ Doctors} & \textbf{Messages} \\
-\midrule
-Psychiatry & 119 & 91,941 \\
-Orthopedics & 60 & 22,109 \\
-Neurology & 82 & 21,534 \\
-Internal Medicine & 87 & 17,928 \\
-Cardiology & 70 & 17,406 \\
-Obstetrics \& Gynecology & 51 & 16,214 \\
-Gastroenterology & 42 & 10,512 \\
-Respiratory Medicine & 15 & 5,283 \\
-Dermatology & 28 & 4,749 \\
-General Surgery & 33 & 3,462 \\
-Pediatrics & 19 & 3,277 \\
-Endocrinology & 5 & 2,210 \\
-Otolaryngology & 17 & 2,202 \\
-Urology & 8 & 695 \\
-Ophthalmology & 12 & 408 \\
-\midrule
-\rowcolor{blue!5}
-\textbf{Total} & \textbf{766} & \textbf{262,263} \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-We observe that psychiatric departments account for a substantial share of the dataset (91,941 messages, 35.0\%), reflecting the strong suitability of text-based remote consultations for mental health care delivery. Orthopedics, neurology, and internal medicine also contribute large volumes, while surgical and procedure-oriented departments (e.g., ophthalmology, urology) generate fewer text-based messages due to their reliance on in-person examinations.
 
 \section{De-identification Pipeline Details}
 
@@ -109,7 +76,8 @@ The de-identification pipeline consists of three sequential stages:
 \begin{enumerate}
 \item \textbf{Rule-based filtering}: Regular expressions identify and replace structured identifiers including Chinese national ID numbers, phone numbers, email addresses, physical addresses, and hospital record numbers.
 \item \textbf{NER-based detection}: A fine-tuned BERT-based NER model identifies contextual identifiers (person names, hospital names, dates, locations) and replaces them with type-consistent placeholders (e.g., \texttt{[\,PERSON\,]}, \texttt{[\,HOSPITAL\,]}, \texttt{[\,DATE\,]}).
-\item \textbf{Manual review}: Two independent annotators review all de-identified records. Disagreements are resolved by a third senior annotator. The final de-identification achieves 98.7\% recall and 97.2\% precision.
+\item \textbf{Manual review}: Two independent annotators review all de-identified records. Disagreements are resolved by a third annotator.
+% The final de-identification achieves 98.7\% recall and 97.2\% precision.
 \end{enumerate}
 
 

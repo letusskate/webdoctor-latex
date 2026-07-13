@@ -58,7 +58,7 @@ k_{\text{selected}} = k^*
 \begin{equation}
 \mathcal{K}_m(q) = \underset{k \in \{1,\ldots,K\}}{\text{top-}m}\; \cos(e_q, e_k)
 \end{equation}
-The selected adapter(s) are then applied to the base model for generation. In practice, the FAISS index~\cite{johnson2019faiss} enables sub-millisecond nearest-neighbor retrieval over $K=120$ physician embeddings.
+The selected adapter(s) are then applied to the base model for generation. In practice, the FAISS index~\cite{johnson2019faiss} enables sub-millisecond nearest-neighbor retrieval over the full set of $K$ physician embeddings.
 
 \subsection{SCF for Parameter Fusion}
 
