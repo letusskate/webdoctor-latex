@@ -17,31 +17,31 @@ We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} data
 
 Table~\ref{tab:dept-breakdown} reports the distribution of physicians and messages across 15 broad clinical categories and a residual ``Other'' category (encompassing non-clinical support units) in the IHDPD dataset. Psychiatric departments account for the largest share (91,941 messages, 35.0\%), reflecting the strong suitability of text-based remote consultations for mental health care. Orthopedics, neurology, and internal medicine also contribute large volumes, while surgical and procedure-oriented departments generate fewer text-based messages due to their reliance on in-person examinations.
 
-\begin{table}[!t]
+\begin{table}[H]
 \caption{IHDPD dataset breakdown by broad clinical category.\label{tab:dept-breakdown}}
-\begin{tabularx}{\textwidth}{lCC}
+\begin{tabularx}{\textwidth}{lCCCC}
 \toprule
-\textbf{Department} & \textbf{Num.\ Doctors} & \textbf{Messages} \\
+\textbf{Department} & \textbf{Dialogue Windows} & \textbf{Num.\ Doctors} & \textbf{Msg.\ Utterances} & \textbf{Avg.\ Turns} \\
 \midrule
-Psychiatry & 119 & 91,941 \\
-Orthopedics & 60 & 22,109 \\
-Neurology & 82 & 21,534 \\
-Internal Medicine & 87 & 17,928 \\
-Cardiology & 70 & 17,406 \\
-Obstetrics \& Gynecology & 51 & 16,214 \\
-Gastroenterology & 42 & 10,512 \\
-Respiratory Medicine & 15 & 5,283 \\
-Dermatology & 28 & 4,749 \\
-General Surgery & 33 & 3,462 \\
-Pediatrics & 19 & 3,277 \\
-Endocrinology & 5 & 2,210 \\
-Otolaryngology & 17 & 2,202 \\
-Urology & 8 & 695 \\
-Ophthalmology & 12 & 408 \\
-Other & 118 & 42,333 \\
+Psychiatry & 5,766 & 119 & 91,941 & 15.9 \\
+Orthopedics & 1,549 & 60 & 22,109 & 14.3 \\
+Neurology & 1,690 & 82 & 21,534 & 12.7 \\
+Internal Medicine & 1,159 & 87 & 17,928 & 15.5 \\
+Cardiology & 1,416 & 70 & 17,406 & 12.3 \\
+Obstetrics \& Gynecology & 1,092 & 51 & 16,214 & 14.8 \\
+Gastroenterology & 1,105 & 42 & 10,512 & 9.5 \\
+Respiratory Medicine & 645 & 15 & 5,283 & 8.2 \\
+Dermatology & 337 & 28 & 4,749 & 14.1 \\
+General Surgery & 796 & 33 & 3,462 & 4.3 \\
+Pediatrics & 196 & 19 & 3,277 & 16.7 \\
+Endocrinology & 284 & 5 & 2,210 & 7.8 \\
+Otolaryngology & 103 & 17 & 2,202 & 21.4 \\
+Urology & 25 & 8 & 695 & 27.8 \\
+Ophthalmology & 29 & 12 & 408 & 14.1 \\
+Other & 2,398 & 118 & 42,333 & 17.7 \\
 \midrule
 \rowcolor{blue!5}
-\textbf{Total} & \textbf{766} & \textbf{262,263} \\
+\textbf{Total} & \textbf{18,590} & \textbf{766} & \textbf{262,263} & \textbf{14.1} \\
 \bottomrule
 \end{tabularx}
 \end{table}
