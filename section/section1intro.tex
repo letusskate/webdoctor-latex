@@ -23,13 +23,13 @@ In this paper, we propose a three-stage personalized adaptation framework that a
 
 To support this research, we construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset, a de-identified multi-doctor multi-patient corpus collected from a real-world operational internet hospital. The dataset spans multiple clinical departments and encompasses diverse consultation scenarios, including initial symptom inquiry, follow-up management, medication guidance, and lifestyle counseling. All personal health information has been rigorously de-identified in compliance with institutional ethics protocols~\cite{johnsonMIMICIIIFreelyAccessible2016}.
 
-Our experimental evaluation demonstrates that the proposed framework achieves substantial improvements over competitive baselines across both automatic evaluation metrics and LLM judge evaluation. Specifically, the DAR router achieves high routing accuracy, SCF preserves a significant fraction of individual adapter performance post-fusion, and the end-to-end system generates responses that are consistently rated as more personalized, professional, and clinically appropriate by the LLM judge (Qwen3.6-35B).
+Our experimental evaluation demonstrates that the proposed framework achieves substantial improvements over competitive baselines across both automatic evaluation metrics and LLM judge evaluation. Specifically, the DAR router achieves high routing accuracy, SCF enables efficient multi-adapter deployment, and the end-to-end system generates responses that are consistently rated as more personalized, professional, and clinically appropriate by the LLM judge (Qwen3.6-35B).
 
 
 In summary, this work makes the following contributions:
 \begin{itemize}
 \item We formalize the problem of physician-specific clinical response generation and propose a three-stage framework combining LoRA training, adaptive routing, and sign-consistent model merging.
-\item We introduce Sign-Consistent Fusion (SCF, not to be confused with Supervised Fine-Tuning), an enhanced interference-aware merging technique that achieves 100\% individual adapter performance retention.
+\item We introduce Sign-Consistent Fusion (SCF, not to be confused with Supervised Fine-Tuning), an enhanced interference-aware merging technique that achieves competitive merged-adapter performance.
 \item We construct IHDPD, a de-identified multi-physician clinical dialogue dataset spanning 121 departments and 766 physicians.
 \item We conduct comprehensive automatic and LLM judge evaluations across three model scales, demonstrating significant improvements over competitive baselines.
 \end{itemize}

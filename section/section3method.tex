@@ -60,6 +60,15 @@ k_{\text{selected}} = k^*
 \end{equation}
 The selected adapter(s) are then applied to the base model for generation. In practice, the FAISS index~\cite{johnson2019faiss} enables sub-millisecond nearest-neighbor retrieval over the full set of $K$ physician embeddings.
 
+\textbf{Routing Context Augmentation.} Beyond the physician identity and query-text signals described above, the DAR router integrates four additional knowledge sources to enrich the routing context:
+\begin{enumerate}
+\item \textbf{Department-level regulations.} Each clinical department maintains codified rules governing permissible response content, specialty-specific disclaimers, and mandatory referral triggers. These regulations are stored as structured text snippets and retrieved by department ID at routing time.
+\item \textbf{Hospital-wide institutional policies.} Global policies---including patient privacy disclaimers, escalation protocols, and medication prescription guidelines---are maintained as a centralized document set and prepended to the routing context regardless of department.
+\item \textbf{Physician--patient dialogue history.} For returning patients, the most recent $N$ turns of the doctor--patient conversation are retrieved to provide continuity of care context, ensuring the generated response is clinically consistent with prior interactions.
+\item \textbf{Physician-curated knowledge base.} Each physician maintains a personal editable archive of clinical notes, treatment templates, frequently-used drug combinations, and specialty references. These documents are indexed via a lightweight retrieval-augmented generation (RAG) pipeline built on FAISS~\cite{johnson2019faiss} with Sentence-BERT embeddings. At inference time, the top-$t$ most relevant knowledge snippets are retrieved and injected into the routing prompt, allowing physicians to dynamically refine their knowledge base without retraining the underlying LoRA adapter. Updates to the knowledge base propagate to the RAG index in real time.
+\end{enumerate}
+The augmented routing context $C_k$ for physician $d_k$ and query $q$ is assembled as: $C_k = \{ \text{dept\_rules}, \text{hospital\_policy}, \text{history}_{N}, \text{RAG\_top}_{t} \}$. This context is prepended to the prompt template before generation, ensuring all regulatory, institutional, and personal knowledge constraints are satisfied simultaneously.
+
 \subsection{SCF for Parameter Fusion}
 
 While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF fuses multiple adapters into a single merged artifact while minimizing interference~\cite{yadavTIESMergingResolvingInterference2023a}. Formally, let $\Delta_k \in \mathbb{R}^{d}$ denote the flattened LoRA parameter delta for physician $d_k$. SCF proceeds in three stages:

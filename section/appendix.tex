@@ -51,13 +51,13 @@ For preference assessment, the judge performs pairwise comparisons between all m
 
 \section{SCF Sensitivity Analysis}
 
-Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF retention rate to the trim fraction $\tau$ with $K=120$. Retention is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
+Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF performance to the trim fraction $\tau$ with $K=120$. Performance is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
 
 \begin{table}[H]
-\caption{SCF sensitivity to trim fraction $\tau$ ($K=120$, 3B model). Retention is relative to the per-physician LoRA-Single BLEU-4 (10.4).\label{tab:scf-sensitivity}}
+\caption{SCF sensitivity to trim fraction $\tau$ ($K=120$, 3B model). \label{tab:scf-sensitivity}}
 \begin{tabularx}{\textwidth}{lCC}
 \toprule
-\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} & \textbf{Retention (\%)} \\
+\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} \\
 \midrule
 0.10 & 9.3 & 89.4 \\
 0.15 & 10.2 & 98.4 \\
