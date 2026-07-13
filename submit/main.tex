@@ -1,0 +1,185 @@
+%  LaTeX support: latex@mdpi.com 
+%  For support, please attach all files needed for compiling as well as the log file, and specify your operating system, LaTeX version, and LaTeX editor.
+
+%=================================================================
+\documentclass[healthcare,article,submit,moreauthors]{Definitions/mdpi} 
+% TikZ libraries
+\usetikzlibrary{positioning}
+
+
+%=================================================================
+% Additional packages for CJK and TikZ
+\usepackage{CJKutf8}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc}
+%\documentclass[preprints,article,submit,moreauthors]{Definitions/mdpi} 
+% For posting an early version of this manuscript as a preprint, you may use "preprints" as the journal. Changing "submit" to "accept" before posting will remove line numbers.
+
+%--------------------
+% Class Options:
+%--------------------
+%----------
+% journal
+%----------
+% Choose between the following MDPI journals:
+% healthcare
+%---------
+% article
+%---------
+% The default type of manuscript is "article", but can be replaced by: 
+% abstract, addendum, article, benchmark, book, bookreview,
+%----------
+% submit
+%----------
+% The class option "submit" will be changed to "accept" by the Editorial Office when the paper is accepted.
+
+%------------------
+% moreauthors
+%------------------
+% If there is only one author the class option oneauthor should be used. Otherwise use the class option moreauthors.
+
+%=================================================================
+% MDPI internal commands - do not modify
+\firstpage{1} 
+\makeatletter 
+\setcounter{page}{\@firstpage} 
+\makeatother
+\pubvolume{1}
+\issuenum{1}
+\articlenumber{0}
+\pubyear{2026}
+\copyrightyear{2026}
+%\externaleditor{Firstname Lastname} % More than 1 editor, please add `` and '' before the last editor name
+\datereceived{ } 
+\daterevised{ } % Comment out if no revised date
+\dateaccepted{ } 
+\datepublished{ } 
+%\datecorrected{} % For corrected papers: "Corrected: XXX" date in the original paper.
+%\dateretracted{} % For retracted papers: "Retracted: XXX" date in the original paper.
+%\doinum{} % Used for some special journals, like molbank
+%\pdfoutput=1 % Uncommented for upload to arXiv.org
+%\CorrStatement{yes}  % For updates
+%\longauthorlist{yes} % For many authors that exceed the left citation part
+%\IsAssociation{yes} % For association journals
+
+
+
+% Keywords
+\keyword{Large Language Model; LoRA; Parameter-Efficient Fine-Tuning; Model Merging; Clinical Natural Language Processing; Internet Hospital; Doctor-Patient Dialogue; Personalization} 
+%=================================================================
+% Add packages and commands here. The following packages are loaded in our class file: fontenc, inputenc, calc, indentfirst, fancyhdr, graphicx, epstopdf, lastpage, ifthen, float, amsmath, amssymb, lineno, setspace, enumitem, mathpazo, booktabs, titlesec, etoolbox, tabto, xcolor, colortbl, soul, multirow, microtype, tikz, totcount, changepage, attrib, upgreek, array, tabularx, pbox, ragged2e, tocloft, marginnote, marginfix, enotez, amsthm, natbib, hyperref, cleveref, scrextend, url, geometry, newfloat, caption, draftwatermark, seqsplit
+% cleveref: load \crefname definitions after \begin{document}
+
+%=================================================================
+% Please use the following mathematics environments: Theorem, Lemma, Corollary, Proposition, Characterization, Property, Problem, Example, ExamplesandDefinitions, Hypothesis, Remark, Definition, Notation, Assumption
+%% For proofs, please use the proof environment (the amsthm package is loaded by the MDPI class).
+
+%=================================================================
+% Full title of the paper (Capitalized)
+% \Title{WebDoctor: Doctor Response Assistant via LoRA Routing and Weight Merging in Internet Hospital Services}
+% \Title{WebDoctor: Online Physician Outpatient Assistant via LoRA Routing and Weight Merging in Internet Hospital Services}
+\Title{WebDoctor: Personalized Doctor Outpatient Assistant via LoRA Routing and Merging in Internet Hospital Services}
+
+% Author Orchid ID: enter ID or remove command
+\newcommand{\orcidauthorA}{0009-0009-2343-776X} % Add \orcidA{} behind the author's name
+%\newcommand{\orcidauthorB}{0000-0000-0000-000X} % Add \orcidB{} behind the author's name
+
+% Authors, for the paper (add full first names)
+\Author{Yubo Wang $^{1,\dag}$\orcidA{}, Fei Liu $^{1,\dag}$, Jin Wang$^{1}$ and Peng Zhao $^{1,}$*}
+
+%\longauthorlist{yes}
+
+% MDPI internal command: Authors, for metadata in PDF
+\AuthorNames{Yubo Wang, Fei Liu, Jin Wang and Peng Zhao}
+
+% Affiliations / Addresses (Add [1] after \address if there is only one affiliation.)
+\address[1]{%
+$^{1}$ \quad Department of Smart Hospital Construction, the First Hospital of Hebei Medical University; wangyubo@jyyy.com.cn, liufei@jyyy.com.cn\\
+% $^{2}$ \quad Affiliation 2; e-mail@e-mail.com
+}
+
+% Contact information of the corresponding author
+\corres{Correspondence: zhaopeng@jyyy.com.cn}
+
+% Current address and/or shared authorship
+\firstnote{These authors contributed equally to this work.} 
+
+%\simplesumm{} % Simple summary
+
+
+% Abstract (Do not insert blank lines, i.e. \\) 
+\abstract{Internet hospitals generate vast amounts of doctor-patient dialogues, yet existing LLM-based clinical assistants produce generic, depersonalized outputs that fail to capture individual physicians' communication styles---limiting real-world adoption. We address this gap by proposing a three-stage personalized adaptation framework. Existing medical QA systems produce generic outputs that fail to capture individual doctors' linguistic styles, departmental norms, and institutional constraints, limiting physician adoption. We propose a three-stage personalized adaptation framework. First, doctor-specific Low-Rank Adaptation (LoRA) modules are trained via LoRA fine-tuning on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving individual adapter performance. We construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset spanning 121 clinical departments and 766 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines: the framework achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). The framework offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.}
+
+% Keywords
+\keyword{doctor; internet hospital; large language model; low-rank adaptation; model merging; natural language processing; personalization} 
+
+% The fields PACS, MSC, and JEL may be left empty or commented out if not applicable
+%\PACS{J0101}
+%\MSC{}
+%\JEL{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\input{section/section1intro}
+
+\input{section/section2related}
+
+\input{section/section3method}
+
+\input{section/section4implementation}
+
+\input{section/section5evaluation}
+
+\input{section/section6discussion}
+
+\input{section/section7conclusion}
+
+\vspace{6pt}
+\authorcontributions{Conceptualization, Y.Wang and F.Liu.; methodology, Y.Wang.; software, Y.Wang.; validation, Y.Wang. and J.Wang.; formal analysis, Y.Wang.; investigation, P.Zhao.; resources, F.Liu., J.Wang. and P.Zhao.; data curation, F.Liu.; writing---original draft preparation, Y.Wang.; writing---review and editing, F.Liu.; visualization, Y.Wang. and F.Liu.; supervision, F.Liu., J.Wang. and P.Zhao.; project administration, P.Zhao.; funding acquisition, P.Zhao. All authors have read and agreed to the published version of the manuscript.}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Optional
+\appendixtitles{yes} % Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
+\appendixstart
+\input{section/appendix}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\isPreprints{}{% This command is only used for ``preprints''.
+\begin{adjustwidth}{-\extralength}{0cm}
+%} % If the paper is ``preprints'', please uncomment this parenthesis.
+%\printendnotes[custom] % Un-comment to print a list of endnotes
+
+\reftitle{References}
+
+%=====================================
+% References, variant A: external bibliography
+%=====================================
+% \bibliography{your_external_BibTeX_file}
+
+%=====================================
+% References, variant B: internal bibliography
+%=====================================
+
+% ACS format
+\bibliography{ref}
+% If authors have biography, please use the format below
+%\section*{Short Biography of Authors}
+%\bio
+%{\raisebox{-0.35cm}{\includegraphics[width=3.5cm,height=5.3cm,clip,keepaspectratio]{Definitions/author1.pdf}}}
+%{\textbf{Firstname Lastname} Biography of first author}
+%
+%\bio
+%{\raisebox{-0.35cm}{\includegraphics[width=3.5cm,height=5.3cm,clip,keepaspectratio]{Definitions/author2.jpg}}}
+%{\textbf{Firstname Lastname} Biography of second author}
+
+% For the MDPI journals use author-date citation, please follow the formatting guidelines on http://www.mdpi.com/authors/references
+% To cite two works by the same author: \citeauthor{ref-journal-1a} (\citeyear{ref-journal-1a}, \citeyear{ref-journal-1b}). This produces: Whittaker (1967, 1975)
+% To cite two works by the same author with specific pages: \citeauthor{ref-journal-3a} (\citeyear{ref-journal-3a}, p. 328; \citeyear{ref-journal-3b}, p.475). This produces: Wong (1999, p. 328; 2000, p. 475)
+
+\PublishersNote{}
+%\isPreprints{}{% This command is only used for ``preprints''.
+\end{adjustwidth}
+%} % If the paper is ``preprints'', please uncomment this parenthesis.
+\end{document}
+
