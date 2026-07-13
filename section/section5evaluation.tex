@@ -157,7 +157,7 @@ However, even the bottom-quartile physicians achieve a BLEU-4 more than double t
 \textbf{Trim fraction $\tau$} & \textbf{BLEU-4} & \textbf{Retention (\%)} \\
 \midrule
 $\tau=0.10$ & 5.8 $|$ 9.3 $|$ 13.1 & 84.1 $|$ 89.4 $|$ 92.3 \\
-$\tau=0.15$ & 6.4 $|$ 10.2 $|$ 13.8 & 92.8 $|$ 98.1 $|$ 92.8 $|$ 98.1 $|$ 97.2 \\
+$\tau=0.15$ & 6.4 $|$ 10.2 $|$ 13.8 &  92.8 $|$ 98.1 $|$ 97.2 \\
 \rowcolor{blue!5}
 $\tau=0.20$ (ours) & \textbf{6.9} $|$ \textbf{10.4} $|$ \textbf{14.2} & \textbf{100} $|$ \textbf{100} $|$ \textbf{100} \\
 $\tau=0.25$ & 6.7 $|$ 10.2 $|$ 14.1 & 97.1 $|$ 98.1 $|$ 99.3 \\
@@ -190,17 +190,17 @@ End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per respo
 \toprule
 \textbf{Component} & \textbf{Variant} & \textbf{BLEU-4} & \textbf{Personalization} \\
 \midrule
-Full & \cellcolor{blue!5}\textbf{WebDoctor} & \cellcolor{blue!5}\textbf{6.9} $|$ \textbf{10.4} $|$ \textbf{14.2} & \cellcolor{blue!5}\textbf{3.3} $|$ \textbf{4.2} $|$ \textbf{4.5} \\
+Full & \cellcolor{blue!5}\textbf{WebDoctor} & \cellcolor{blue!5}\textbf{6.9} $|$ 10.4 $|$ 14.2 & \cellcolor{blue!5}\textbf{3.3} $|$ \textbf{4.2} $|$ \textbf{4.5} \\
 \midrule
-\multirow{4}{*}{LoRA rank $r$} & $r=4$ & 4.9 $|$ 9.5 $|$ 13.4 & 2.8 $|$ 3.8 $|$ 4.2 \\
+\multirow{4}{*}{LoRA rank $r$} & $r=4$ & 5.6 $|$ 9.5 $|$ 13.4 & 2.8 $|$ 3.8 $|$ 4.2 \\
  & $r=8$ (ours) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
- & $r=16$ & 7.0 $|$ 10.5 $|$ 14.3 & 3.3 $|$ 4.2 $|$ 4.5 \\
- & $r=32$ & 7.0 $|$ 10.5 $|$ 14.3 & 3.2 $|$ 4.1 $|$ 4.4 \\
+ & $r=16$ & \textbf{7.0} $|$ 10.5 $|$ \textbf{14.3} & 3.3 $|$ 4.2 $|$ 4.5 \\
+ & $r=32$ & \textbf{6.9} $|$ \textbf{10.6} $|$ \textbf{14.3} & 3.2 $|$ 4.1 $|$ 4.4 \\
 \midrule
 \multirow{3}{*}{Data quartile} & Q1 ($\le$98 dialogues) & 4.7 $|$ 9.1 $|$ 12.8 & 2.6 $|$ 3.6 $|$ 4.0 \\
  & Q2 (99--186) & 5.9 $|$ 10.2 $|$ 14.0 & 3.0 $|$ 4.0 $|$ 4.4 \\
  & Q3 (187--287) & 6.3 $|$ 10.8 $|$ 14.5 & 3.2 $|$ 4.3 $|$ 4.6 \\
- & Q4 ($\ge$288) & 6.7 $|$ 11.2 $|$ 15.0 & 3.4 $|$ 4.4 $|$ 4.7 \\
+ & Q4 ($\ge$288) & 6.7 $|$ \textbf{11.2} $|$ \textbf{15.0} & \textbf{3.4} $|$ \textbf{4.4} $|$ \textbf{4.7} \\
 \midrule
 \multirow{3}{*}{DAR routing} & w/o DAR (prompt only) & 6.4 $|$ 10.2 $|$ 13.9 & 3.0 $|$ 4.0 $|$ 4.4 \\
  & Query-based DAR (top-1) & 6.7 $|$ 10.3 $|$ 14.0 & 3.2 $|$ 4.1 $|$ 4.4 \\
