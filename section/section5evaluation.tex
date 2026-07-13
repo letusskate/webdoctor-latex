@@ -219,12 +219,6 @@ SCF adapt.\ trim $\lambda$ & $\lambda=0.0$ & 6.7 $|$ 10.1 $|$ 13.8 & 3.2 $|$ 4.0
  & $\lambda=0.5$ (ours) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
  & $\lambda=1.0$ & 6.4 $|$ 9.7 $|$ 13.3 & 2.8 $|$ 3.7 $|$ 4.1 \\
  & w/o both (Shared LoRA) & 5.1 $|$ 7.8 $|$ 11.3 & 1.9 $|$ 2.8 $|$ 3.4 \\
-% \midrule
-% Deployment & Indiv.\ adapters ($K{=}120$) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
-% \midrule
-%  & Merged adapter (1$\times$) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
-% \midrule
-%  & Merged + DAR (ours) & 6.9 $|$ 10.4 $|$ 14.2 & 3.3 $|$ 4.2 $|$ 4.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -236,6 +230,4 @@ Removing the DAR router and relying solely on a generic prompt prefix (``w/o DAR
 Removing both DAR and SCF (i.e., Shared LoRA) yields the largest degradation (BLEU-4 5.1/7.8/11.3, personalization 1.9/2.8/3.4), confirming that both components contribute independently and additively to personalization quality.
 Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is overly aggressive (BLEU-4 5.8/9.3/13.1, retention 84.1/89.4/92.3\%), while $\tau=0.30$ retains more parameters but introduces noise (BLEU-4 6.1/9.5/13.4).
 
-
-% We report BLEU-4 as a complementary lexical overlap metric alongside ROUGE-L and BERTScore; however, we note that BLEU was originally designed for machine translation and may not fully capture the quality of open-ended clinical dialogue generation~\cite{papineni2002bleu}. Our primary automatic metrics are therefore BERTScore and ROUGE-L, with BLEU-4 provided for comparability with prior work.
 
