@@ -18,7 +18,7 @@ The key challenges are: (a) $N_k$ is typically small (tens to hundreds of exampl
 % \input{figures/method-overview}
 \begin{figure}[!t]
 \includegraphics[width=\textwidth]{figures/design.png}
-\caption{Overview of the three-stage personalized adaptation framework. Stage~1: Doctor-specific LoRA adapters are trained offline via LLaMA-Factory LoRA fine-tuning using each physician's historical consultation records. Stage~2: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. Stage~3: SCF (TRIM $\rightarrow$ ELECT SIGN $\rightarrow$ MERGE) fuses multiple doctor-specific adapters into a single unified deployment artifact, enabling efficient multi-physician serving through a single inference endpoint.}
+\caption{Overview of the three-stage personalized adaptation framework. Offline: Doctor-specific LoRA adapters are trained offline via LoRA fine-tuning using each physician's historical consultation records. Online: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. SCF fuses multiple doctor-specific adapters into a single unified deployment artifact with LoRAX, enabling efficient multi-physician serving through a single inference endpoint.}
 \label{fig:method-overview}
 \end{figure}   
 \unskip

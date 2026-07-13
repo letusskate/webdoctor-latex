@@ -123,7 +123,7 @@ LoRA-Merge-TIES & 6.7 $|$ 10.1 $|$ 13.8 & 14.9 $|$ 20.2 $|$ 26.8 & 0.67 $|$ 0.72
 \setlength{\tabcolsep}{4pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{Human evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. The LLM judge (Qwen3.6-35B-Instruct) rated generated responses on 5-point Likert scales. Preference (\%) is the fraction of blind A/B comparisons favoring the given method.}
+\caption{LLM evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. The LLM judge (Qwen3.6-35B-Instruct) rated generated responses on 5-point Likert scales. Preference (\%) is the fraction of blind A/B comparisons favoring the given method.}
 \label{tab:ttft}
 \begin{tabular}{c|ccc|c}
 \toprule
@@ -154,7 +154,7 @@ Our Sign-Consistent Fusion (SCF) further improves upon TIES-MERGING, matching th
 The full WebDoctor system, which combines SCF with identity-based DAR routing and physician-specific prompt prefixes, preserves this performance, demonstrating that the merged deployment mode introduces no measurable personalization degradation.
 
 \subsubsection{LLM Judge Evaluation}
-Table~\ref{tab:ttft} presents the human evaluation results across model scales.
+Table~\ref{tab:ttft} presents the LLM evaluation results across model scales.
 The personalization gap between the Base Model and WebDoctor widens with model scale: from 1.4$\rightarrow$3.3 at 1B (+1.9 points) to 2.8$\rightarrow$4.5 at 7B (+1.7 points), suggesting that larger models have more expressive capacity to absorb physician-specific stylistic patterns.
 The Base Model receives a preference share of only 3--8\%, corroborating the automatic findings: physicians do not perceive generic outputs as matching their communication style at any scale.
 Shared LoRA achieves moderate improvement (preference 8--15\%), but still falls well below acceptable levels.
@@ -196,7 +196,7 @@ The merged SCF adapter occupies 6.8\,MB (equivalent to a single adapter) and is 
 End-to-end inference latency with the merged adapter is 0.9/1.8/3.2\,s per response (1B/3B/7B) on a single H20-3e GPU, identical to the individual adapter case, confirming that SCF introduces no computational overhead at inference time.
 
 \subsubsection{Ablation Study}
-We ablate the key design choices of WebDoctor, reporting BLEU-4 and human-evaluated personalization scores (5-point scale) across all three model scales.
+We ablate the key design choices of WebDoctor, reporting BLEU-4 and LLM-evaluated personalization scores (5-point scale) across all three model scales.
 Table~\ref{tab:ablation} (bottom block) presents the results.
 Removing the DAR router and relying solely on a generic prompt prefix (``w/o DAR'') causes a moderate drop across scales (BLEU-4 6.4/10.2/13.9, personalization 3.0/4.0/4.4), confirming that explicit physician identity conditioning via adaptive routing is important for stylistic fidelity.
 Disabling SCF and serving individual adapters (``w/o SCF'') preserves full personalization quality but at the cost of $K$-fold storage and loading overhead, as discussed above.
