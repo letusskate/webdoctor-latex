@@ -39,9 +39,9 @@ and we report the recall-oriented variant. PPL is the exponentiated average nega
 \begin{equation}
 \mathrm{PPL} = \exp\!\left(-\frac{1}{T}\sum_{t=1}^{T} \log P(r_t \mid q, r_{<t}; \Theta)\right).
 \end{equation}
-The \emph{Retention Rate} quantifies how much of the individual adapter's performance is preserved after merging:
+The \emph{Retention Rate} quantifies how much of the full WebDoctor system's performance a given method achieves:
 \begin{equation}
-\mathrm{Retention} = \frac{\mathrm{BLEU\text{-}4}_{\mathrm{merged}}}{\mathrm{BLEU\text{-}4}_{\mathrm{single}}} \times 100\%.
+\mathrm{Retention} = \frac{\mathrm{BLEU\text{-}4}_{\mathrm{method}}}{\mathrm{BLEU\text{-}4}_{\mathrm{WebDoctor}}} \times 100\%.
 \end{equation}
 
 (2)~\textbf{LLM-as-a-Judge evaluation.} We adopt Qwen3.6-35B~\cite{qwen36_35b_a3b} as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query $q$ directed to physician $d_k$, the judge receives the generated response $\hat{r}$ together with the physician's department, specialty description, and a representative sample of their historical responses. It produces three 5-point Likert ratings:
@@ -59,7 +59,7 @@ where $\mathrm{dim}\in\{\text{Personalization}, \text{Clinical Accuracy}, \text{
 \setlength{\tabcolsep}{2.5pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{Automatic evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. Retention Rate is relative to LoRA-Single (the per-physician gold standard). $\uparrow$: higher is better; $\downarrow$: lower is better.}
+\caption{Automatic evaluation results across LLaMA-3.2-1B/3B and Qwen-2.5-7B. Each cell reports 1B $|$ 3B $|$ 7B. Retention Rate is relative to the full WebDoctor system. $\uparrow$: higher is better; $\downarrow$: lower is better.}
 \label{tab:accuracy}
 \begin{tabular}{c|cccc|c}
 \toprule
@@ -109,11 +109,11 @@ Table~\ref{tab:accuracy} reports the automatic evaluation results across all met
 The Base Model achieves BLEU-4 scores of 3.2/5.1/8.7 at 1B/3B/7B, confirming that zero-shot prompting cannot produce physician-specific outputs even as model scale increases.
 Shared LoRA improves to 5.1/7.8/11.3, demonstrating that general clinical adaptation is beneficial, but the lack of per-physician differentiation leaves a substantial gap relative to individual adaptation at every scale.
 
-Among the merging baselines, simple averaging (LoRA-Merge-Avg) performs worst across all scales (BLEU-4 3.7/5.8/9.1), with retention rates\footnote{Retention rate is defined as $\text{BLEU-4}_{\text{merged}} / \text{BLEU-4}_{\text{individual}} \times 100\%$, measuring the fraction of per-physician adapter performance preserved after merging. A rate of 100\% indicates that merged-adapter performance is statistically indistinguishable from serving each physician's adapter individually, achieved through SCF's sign-consistency mechanism which fully resolves parameter interference between adapters.} degrading sharply for smaller models (53.6\% at 1B vs.\ 64.1\% at 7B), indicating that smaller models are more vulnerable to parameter interference.
+Among the merging baselines, simple averaging (LoRA-Merge-Avg) performs worst across all scales (BLEU-4 3.7/5.8/9.1), with retention rates\footnote{Retention rate is defined as $\text{BLEU-4}_{\text{method}} / \text{BLEU-4}_{\text{WebDoctor}} \times 100\%$, measuring how closely a given method approaches the full WebDoctor system performance. A rate of 100\% indicates parity with WebDoctor.} degrading sharply for smaller models (53.6\% at 1B vs.\ 64.1\% at 7B), indicating that smaller models lose a larger fraction of WebDoctor's performance under naive averaging.
 Task arithmetic (LoRA-Merge-TA) improves retention to 81.2/83.7/84.5\%, but still loses 15--19\% of individual performance.
 The original TIES-MERGING achieves 97.1--97.2\% retention across scales (BLEU-4 6.7/10.1/13.8), confirming that explicit sign resolution is effective regardless of model capacity.
 Our Sign-Consistent Fusion (SCF) further improves upon TIES-MERGING, matching the LoRA-Single upper bound across all metrics and scales (BLEU-4 6.9/10.4/14.2, retention 100\%).
-The full WebDoctor system, which combines SCF with identity-based DAR routing and physician-specific prompt prefixes, preserves this performance, demonstrating that the merged deployment mode introduces no measurable personalization degradation.
+The full WebDoctor system, which combines SCF with identity-based DAR routing and physician-specific prompt prefixes, preserves the best performance.
 
 \subsubsection{LLM Judge Evaluation}
 Table~\ref{tab:ttft} presents the LLM evaluation results across model scales.
@@ -150,7 +150,7 @@ However, even the bottom-quartile physicians achieve a BLEU-4 more than double t
 % \setlength{\tabcolsep}{6pt}
 \renewcommand\arraystretch{1.06}
 \centering
-\caption{SCF retention rate by trim fraction $\tau$ ($K=766$). Each cell reports 1B $|$ 3B $|$ 7B.}
+\caption{SCF performance degradation by trim fraction $\tau$ ($K=766$). Each cell reports 1B $|$ 3B $|$ 7B.}
 \label{tab:scf_retention}
 \begin{tabular}{c|cc}
 \toprule
@@ -167,10 +167,10 @@ $\tau=0.30$ & 6.1 $|$ 9.5 $|$ 13.4 & 88.4 $|$ 91.3 $|$ 94.4 \\
 \end{table}
 
 \subsubsection{SCF Performance Preservation}
-Table~\ref{tab:scf_retention} reports the retention rate of SCF as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
+Table~\ref{tab:scf_retention} reports the degradation of SCF performance as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
 At the optimal $\tau=0.20$ and the full physician pool ($K=766$), SCF retains 100\% of individual adapter performance (BLEU-4 10.4 vs.\ 10.4), outperforming the original TIES-MERGING (97.1\%) at the same $\tau$.
 Retention is robust across a range of $\tau$ values: $\tau=0.15$ achieves 98.4\%, $\tau=0.25$ achieves 99.2\%, and only at extremes ($\tau\le0.10$ or $\tau\ge0.40$) does retention drop below 95\%.
-Scaling $K$ from 20 to 120 physicians, the SCF retention rate degrades gracefully from 100\% to 99.7\%, indicating that the enhanced sign-consistency mechanism effectively resolves sign conflicts even as the adapter pool grows.
+Scaling $K$ from 20 to 120 physicians, the SCF performance degrades gracefully from 100\% to 99.7\%, indicating that the enhanced sign-consistency mechanism effectively resolves sign conflicts even as the adapter pool grows.
 In contrast, simple averaging degrades sharply from 87.3\% at $K=20$ to 55.8\% at $K=766$, confirming that interference accumulates multiplicatively without explicit sign resolution.
 
 \textbf{Deployment Efficiency.} Each individual LoRA adapter requires 6.8\,MB of storage and approximately 120\,ms to load from disk.
