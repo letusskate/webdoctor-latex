@@ -103,12 +103,12 @@
 %% Title
 \begin{flushleft}
 {\Large
-\textbf{WebDoctor: personalized doctor outpatient assistant via LoRA routing and merging in internet hospital services}
+\textbf{WebDoctor: Personalized Doctor Outpatient Assistant via LoRA Routing and Merging in Internet Hospital Services}
 }
 \newline
 \\
-Yubo Wang\textsuperscript{1,\Yinyang},
-Fei Liu\textsuperscript{1,\Yinyang},
+Yubo Wang\textsuperscript{1,$\dag$},
+Fei Liu\textsuperscript{1,$\dag$},
 Jin Wang\textsuperscript{1},
 Peng Zhao\textsuperscript{1,*}
 \\
@@ -117,7 +117,8 @@ Peng Zhao\textsuperscript{1,*}
 \\
 \bigskip
 
-\Yinyang These authors contributed equally to this work.
+% \Yinyang These authors contributed equally to this work.
+$\dag$ These authors contributed equally to this work.
 
 * zhaopeng@jyyy.com.cn
 
@@ -143,7 +144,8 @@ Large language models (LLMs)~\cite{touvronLlama2Open2023} have demonstrated rema
 % \input{figures/comparison}
 
 \begin{figure}[!t]
-\includegraphics[width=\textwidth]{figures/motivation.png}
+  \centering
+\includegraphics[width=0.95\textwidth]{figures/motivation.png}
 \caption{From general-purpose AI to doctor-personalized response. The left column (blue) illustrates the limitations of conventional medical QA systems: a single shared model without personalization, routing, or model merging produces generic outputs requiring heavy physician editing. The right column (orange) presents our three-stage framework: per-doctor LoRA adapters capture individual styles, DAR routes to the appropriate physician, and SCF merges adapters into an efficient single deployment---yielding personalized responses that physicians can adopt with minimal modification.}
 \label{fig:comparison}
 \end{figure}   
@@ -211,8 +213,9 @@ The key challenges are: (a) $N_k$ is typically small (tens to hundreds of exampl
 
 % \input{figures/method-overview}
 \begin{figure}[!t]
-\includegraphics[width=\textwidth]{figures/design.png}
-\caption{Overview of the three-stage personalized adaptation framework. Offline: Doctor-specific LoRA adapters are trained offline via LoRA fine-tuning using each physician's historical consultation records. Online: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. SCF fuses multiple doctor-specific adapters into a single unified deployment artifact with LoRAX, enabling efficient multi-physician serving through a single inference endpoint.}
+\centering
+\includegraphics[width=0.8\textwidth]{figures/design.png}
+\caption{Overview of the three-stage personalized adaptation framework. Offline: Doctor-specific LoRA adapters are trained offline via LoRA fine-tuning using each physician's historical consultation records. Online: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. SCF fuses multiple doctor-specific adapters into a single unified deployment artifact with LoRAX, enabling efficient multi-physician serving.}
 \label{fig:method-overview}
 \end{figure}   
 
@@ -665,7 +668,7 @@ Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF performance to th
 \caption{SCF sensitivity to trim fraction $\tau$ ($K=120$, 3B model). \label{tab:scf-sensitivity}}
 \begin{tabularx}{\textwidth}{lCC}
 \toprule
-\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} \\
+\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} &\textbf{Retention (\%)} \\
 \midrule
 0.10 & 9.3 & 89.4 \\
 0.15 & 10.2 & 98.4 \\
