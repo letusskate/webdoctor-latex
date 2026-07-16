@@ -1,0 +1,59 @@
+% !TeX root = ../main.tex
+
+\section{Implementation}\label{section:implementation}
+
+\subsection{Dataset Construction: IHDPD}
+
+We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} dataset from the consultation records of a real-world internet hospital platform. The data collection and processing pipeline adheres to strict ethical and privacy protocols approved by the First Hospital of Hebei Medical University.
+
+\textbf{Data Source.} The raw data consist of text-based consultation records collected over a ~16-month period (January 2025 to April 2026) from an operational internet hospital platform serving over 100,000 registered patients and more than 700 licensed physicians across 15 clinical departments, including internal medicine, cardiology, dermatology, pediatrics, obstetrics and gynecology, orthopedics, neurology, gastroenterology, endocrinology, psychiatry, ophthalmology, otolaryngology, urology, respiratory medicine, and general surgery. After de-identification and quality filtering, the resulting corpus contains 262,263 individual message utterances grouped into 18,590 unique doctor--patient conversation sessions, spanning 766 licensed physicians across 121 clinical sub-departments (aggregated into 15 broad categories). The full dataset statistics are summarized in Table~\ref{tab:dept-breakdown}.
+
+\textbf{De-identification.} All personally identifiable information (PII) and protected health information (PHI) are systematically removed using a hybrid approach combining rule-based pattern matching (for structured identifiers such as names, ID numbers, phone numbers, and addresses) with a fine-tuned named entity recognition model~\cite{johnsonMIMICIIIFreelyAccessible2016} (for contextual identifiers such as hospital names, dates, and locations). The de-identification pipeline achieves a recall of 98.7\% and a precision of 97.2\% on a manually annotated validation set of 500 dialogues. All de-identified records undergo a secondary manual review by two independent annotators to ensure completeness.
+
+\textbf{Dialogue Structure.} Each consultation session in IHDPD is structured as a multi-turn dialogue between one patient and one physician. A typical session comprises an initial symptom description by the patient, followed by one or more rounds of physician inquiry, diagnostic reasoning, and treatment recommendation. The dataset preserves the natural turn-taking structure, including timestamps (with dates generalized to month-level granularity), department labels, and physician specialty annotations.
+
+\textbf{Data Partitioning.} For each physician, dialogue windows are split chronologically into training (70\%, earliest consultations), validation (15\%), and test (15\%). 
+Table~\ref{tab:dept-breakdown} reports the distribution of physicians and messages across 15 broad clinical categories and a residual ``Other'' category in the IHDPD dataset. Psychiatric departments account for the largest share (91,941 messages, 35.0\%), reflecting the strong suitability of text-based remote consultations for mental health care. Orthopedics, neurology, and internal medicine also contribute large volumes, while surgical and procedure-oriented departments generate fewer text-based messages due to their reliance on in-person examinations.
+
+\begin{table}[!t]
+\caption{IHDPD dataset breakdown by broad clinical category.\label{tab:dept-breakdown}}
+\begin{tabularx}{\textwidth}{lCCCC}
+\toprule
+\textbf{Department} & \textbf{Dialogue Windows} & \textbf{Num.\ Doctors} & \textbf{Msg.\ Utterances} & \textbf{Avg.\ Turns} \\
+\midrule
+Psychiatry & 5,766 & 119 & 91,941 & 15.9 \\
+Orthopedics & 1,549 & 60 & 22,109 & 14.3 \\
+Neurology & 1,690 & 82 & 21,534 & 12.7 \\
+Internal Medicine & 1,159 & 87 & 17,928 & 15.5 \\
+Cardiology & 1,416 & 70 & 17,406 & 12.3 \\
+Obstetrics \& Gynecology & 1,092 & 51 & 16,214 & 14.8 \\
+Gastroenterology & 1,105 & 42 & 10,512 & 9.5 \\
+Respiratory Medicine & 645 & 15 & 5,283 & 8.2 \\
+Dermatology & 337 & 28 & 4,749 & 14.1 \\
+General Surgery & 796 & 33 & 3,462 & 4.3 \\
+Pediatrics & 196 & 19 & 3,277 & 16.7 \\
+Endocrinology & 284 & 5 & 2,210 & 7.8 \\
+Otolaryngology & 103 & 17 & 2,202 & 21.4 \\
+Urology & 25 & 8 & 695 & 27.8 \\
+Ophthalmology & 29 & 12 & 408 & 14.1 \\
+Other & 2,398 & 118 & 42,333 & 17.7 \\
+\midrule
+\rowcolor{blue!5}
+\textbf{Total} & \textbf{18,590} & \textbf{766} & \textbf{262,263} & \textbf{14.1} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsection{System Implementation Details}
+
+The WebDoctor service is implemented as a modular pipeline comprising four stages:
+
+\textbf{Stage 1: Data Ingestion and Preprocessing.} Raw consultation records are streamed through the de-identification pipeline, tokenized using the base model's tokenizer, and formatted into instruction-following templates that include the patient query, physician department, and expected response format. The preprocessing stage handles batching, shuffling, and dynamic padding using standard data utilities~\cite{zheng2024llamafactory}.
+
+\textbf{Stage 2: LoRA Training.} We perform LoRA fine-tuning using LLaMA-Factory~\cite{zheng2024llamafactory} (via WeClone~\cite{xmingXming521WeClone2026}) with the following hyperparameters: LoRA rank $r = 8$, LoRA alpha $\alpha = 16$, dropout rate $0.1$, target modules $\{q\_proj, v\_proj, k\_proj, o\_proj\}$, learning rate $2 \times 10^{-4}$ with cosine scheduling, batch size 4 with gradient accumulation over 8 steps (effective batch size 32), and a maximum of 10 training epochs with early stopping (patience = 3). Training is conducted on 8$\times$ NVIDIA H20-3e (141GB) GPUs using DeepSpeed ZeRO Stage-2 optimization.
+
+\textbf{Stage 3: DAR Router.} The router encodes physician style descriptions $s_k$ using a distilled Sentence-BERT model~\cite{reimers2019sentence} (384-dimensional embeddings) pre-computed offline and stored in an in-memory FAISS index~\cite{johnson2019faiss}. At inference time, the patient query is encoded on-the-fly, and the top-$m$ most similar physician adapters are retrieved. For identity-based routing, this step is bypassed entirely, and the system directly loads the prescribed adapter.
+
+\textbf{Stage 4: Inference with Merged Adapters.} We leverage LoRAX~\cite{PredibaseLorax2026}, an open-source multi-LoRA inference server, for dynamic adapter loading and swapping at inference time. LoRAX enables hot-swapping of LoRA adapters without reloading the base model, supporting two deployment modes: (a) per-adapter serving, where each physician's LoRA adapter is loaded on demand via LoRAX and applied to the base model for generation (suitable for low-traffic scenarios or A/B testing); and (b) merged-adapter serving, where SCF is applied offline to produce a single merged adapter that is pre-loaded, and generation is conditioned on a physician-identifying prompt prefix. The merged mode supports a prompt template: ``\texttt{string[Department: \{dept\}] [Physician ID: \{doc\_id\}] Patient: \{query\}$\backslash$Doctor:}'' that cues the model to generate in the appropriate personalized style.
+
