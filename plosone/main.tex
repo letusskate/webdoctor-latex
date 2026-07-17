@@ -1,4 +1,4 @@
-%% PLOS ONE LaTeX Template
+﻿%% PLOS ONE LaTeX Template
 %% WebDoctor: Personalized Doctor Outpatient Assistant
 %% via LoRA Routing and Merging in Internet Hospital Services
 
@@ -77,7 +77,7 @@
 \renewcommand{\figurename}{Fig}
 
 %% Bibliography style
-\bibliographystyle{unsrt}
+\bibliographystyle{unsrt5}
 
 %% Remove brackets from numbering in References
 \makeatletter
@@ -113,7 +113,7 @@ Jin Wang\textsuperscript{1},
 Peng Zhao\textsuperscript{1,*}
 \\
 \bigskip
-\textbf{1} Department of Smart Hospital Construction, the First Hospital of Hebei Medical University; wangyubo@jyyy.com.cn, liufei@jyyy.com.cn
+\textbf{1} Department of Smart Hospital Construction, the First Hospital of Hebei Medical University; wang\_yubo@tju.edu.cn, wangyubo@jyyy.com.cn, liufei@jyyy.com.cn
 \\
 \bigskip
 
@@ -127,7 +127,7 @@ $\dag$ These authors contributed equally to this work.
 %% Abstract
 \section*{Abstract}
 
-Internet hospitals generate vast amounts of doctor-patient dialogues, yet existing LLM-based clinical assistants produce generic, depersonalized outputs that fail to capture individual physicians' communication styles---limiting real-world adoption. We address this gap by proposing a three-stage personalized adaptation framework. First, doctor-specific Low-Rank Adaptation (LoRA) modules are trained via LoRA fine-tuning on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving individual adapter performance. We construct the Internet Hospital Doctor-Patient Dialogue (IHDPD) dataset spanning 121 clinical departments and 766 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines: the framework achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). The framework offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.
+Internet hospitals generate vast amounts of doctor-patient dialogues, yet existing LLM-based assistants produce generic, depersonalized outputs that fail to capture individual physicians' communication styles, leading to limited real-world adoption in the outpatient process of internet hospitals. We address this gap by proposing WebDoctor, a three-stage personalized LLM outpatient assistant framework. First, doctor-specific low-rank adaptation modules are trained via LoRA fine-tuning on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving individual adapter performance. We construct a real-world internet hospital doctor-patient dialogue (IHDPD) dataset spanning 121 clinical departments and 766 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines. WebDoctor achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). WebDoctor offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.
 
 
 \clearpage
