@@ -41,7 +41,7 @@ The \emph{Retention Rate} quantifies how much of the full WebDoctor system's per
 \mathrm{Retention} = \frac{\mathrm{BLEU\text{-}4}_{\mathrm{method}}}{\mathrm{BLEU\text{-}4}_{\mathrm{WebDoctor}}} \times 100\%.
 \end{equation}
 
-(2)~\textbf{LLM-as-a-Judge evaluation.} We adopt Qwen3.6-35B~\cite{qwen36_35b_a3b} as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query $q$ directed to physician $d_k$, the judge receives the generated response $\hat{r}$ together with the physician's department, specialty description, and a representative sample of their historical responses. It produces three 5-point Likert ratings:
+(2)~\textbf{LLM-as-a-Judge evaluation.} We adopt Qwen3.6-35B~\cite{qwen36_35b_a3b} as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12,chenGMAIMMBenchComprehensiveMultimodal2024}. For each test query $q$ directed to physician $d_k$, the judge receives the generated response $\hat{r}$ together with the physician's department, specialty description, and a representative sample of their historical responses. It produces three 5-point Likert ratings:
 \emph{Personalization}---stylistic and terminological fidelity to physician $d_k$; \emph{Clinical Accuracy}---medical correctness and appropriateness; and \emph{Fluency}---grammaticality and naturalness. We also record pairwise preference judgments (method A vs.\ method B) via the same judge. Formally:
 \begin{equation}
 \mathrm{Score}_{\mathrm{dim}}(\hat{r}) = \mathrm{Qwen}_{3.6\text{-}35\mathrm{B}}\big(q, \hat{r}, d_k, \mathrm{dim}\big) \in \{1,2,3,4,5\},
