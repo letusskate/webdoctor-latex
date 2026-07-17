@@ -1,8 +1,6 @@
-% !TeX root = ../main.tex
+﻿\section*{Implementation}\label{section:implementation}
 
-\section{Implementation}\label{section:implementation}
-
-\subsection{Dataset Construction: IHDPD}
+\subsection*{Dataset Construction: IHDPD}
 
 We construct the \textbf{Internet Hospital Doctor-Patient Dialogue (IHDPD)} dataset from the consultation records of a real-world internet hospital platform. The data collection and processing pipeline adheres to strict ethical and privacy protocols approved by the First Hospital of Hebei Medical University.
 
@@ -45,7 +43,7 @@ Other & 2,398 & 118 & 42,333 & 17.7 \\
 \end{table}
 
 
-\subsection{System Implementation Details}
+\subsection*{System Implementation Details}
 
 The WebDoctor service is implemented as a modular pipeline comprising four stages:
 
@@ -57,3 +55,7 @@ The WebDoctor service is implemented as a modular pipeline comprising four stage
 
 \textbf{Stage 4: Inference with Merged Adapters.} We leverage LoRAX~\cite{PredibaseLorax2026}, an open-source multi-LoRA inference server, for dynamic adapter loading and swapping at inference time. LoRAX enables hot-swapping of LoRA adapters without reloading the base model, supporting two deployment modes: (a) per-adapter serving, where each physician's LoRA adapter is loaded on demand via LoRAX and applied to the base model for generation (suitable for low-traffic scenarios or A/B testing); and (b) merged-adapter serving, where SCF is applied offline to produce a single merged adapter that is pre-loaded, and generation is conditioned on a physician-identifying prompt prefix. The merged mode supports a prompt template: ``\texttt{string[Department: \{dept\}] [Physician ID: \{doc\_id\}] Patient: \{query\}$\backslash$Doctor:}'' that cues the model to generate in the appropriate personalized style.
 
+
+
+
+% \clearpage

@@ -1,5 +1,4 @@
-% !TeX root = ../main.tex
-\section{Discussion}
+﻿\section*{Discussion}
 
 \textbf{Key Findings and Implications.} Our results demonstrate that physician-specific adaptation is both necessary and effective: at the 3B scale, the gap between the base model (BLEU-4: 5.1, Personalization: 2.1) and individualized LoRA adaptation (BLEU-4: 10.4, Personalization: 4.2) confirms that generic models cannot capture individual practice styles. SCF further enables practical deployment by preserving individual adapter performance post-merging, allowing hundreds of physicians to be served through a single inference endpoint---a critical advance for resource-constrained hospital settings. The DAR router supports both identity-based and query-based deployment scenarios with minimal latency overhead.
 
@@ -11,3 +10,6 @@
 % Clear governance frameworks for accountability remain essential.
 
 \textbf{Future Work.} Promising extensions include multi-modal personalization (e.g., diagnostic imaging reports), continuous LoRA updating as physicians accumulate new consultations, and DAR enhancement via reinforcement learning from physician adoption feedback.
+
+
+

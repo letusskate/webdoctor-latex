@@ -1,9 +1,6 @@
-% !TeX root = ../main.tex
+﻿\section*{Experiments}\label{section:evaluation}
 
-% \clearpage
-\section{Experiments}\label{section:evaluation}
-
-\subsection{Setup}
+\subsection*{Setup}
 
 
 \textbf{Basic Settings.} We evaluate on three base models spanning distinct capability tiers: LLaMA-3.2-1B-Instruct, LLaMA-3.2-3B-Instruct~\cite{grattafioriLlama3Herd2024}, and Qwen-2.5-7B-Instruct~\cite{qwenQwen25TechnicalReport2025}. For all LoRA training, we adopt LLaMA-Factory~\cite{zheng2024llamafactory} (via WeClone~\cite{xmingXming521WeClone2026}) for LoRA fine-tuning with rank $r=8$, alpha $\alpha=16$, and dropout $0.1$ applied to query, key, value, and output projection matrices. Training uses 8$\times$ NVIDIA H20-3e (141GB) GPUs with DeepSpeed ZeRO-2 and BF16 mixed precision, PyTorch 2.7.1, and CUDA 12.8; the effective batch size is 32 with a learning rate of $2\times10^{-4}$ under cosine scheduling. For inference, we apply FlashAttention-2~\cite{dao2023flashattention} for efficient attention computation. For memory-constrained deployments, QLoRA~\cite{dettmers2023qlora} can be employed to quantize the base model to 4-bit without significant performance degradation. Unless otherwise specified, WebDoctor uses per-physician LoRA-Single adapters with identity-based Doctor-Adaptive Routing (DAR) and Sign-Consistent Fusion (SCF) at trim fraction $\tau=0.20$. The optimal hyperparameters are selected via grid search over LoRA rank $r \in \{4,8,16,32\}$ and SCF trim fraction $\tau \in \{0.10,0.15,0.20,0.25,0.30,0.40\}$ on the validation set; the configuration ($r=8$, $\tau=0.20$) maximizing BLEU-4 is retained for test-set evaluation. 
@@ -80,9 +77,9 @@ LoRA-Merge-TIES & 6.7 $|$ 10.1 $|$ 13.8 & 14.9 $|$ 20.2 $|$ 26.8 & 0.67 $|$ 0.72
 \end{table*}
 
 
-\subsection{Results}
+\subsection*{Results}
 
-\subsubsection{Automatic Evaluation}
+\subsubsection*{Automatic Evaluation}
 Table~\ref{tab:accuracy} reports the automatic evaluation results across all methods and model scales.
 The Base Model achieves BLEU-4 scores of 3.2/5.1/8.7 at 1B/3B/7B, confirming that zero-shot prompting cannot produce physician-specific outputs even as model scale increases.
 Shared LoRA improves to 5.1/7.8/11.3, demonstrating that general clinical adaptation is beneficial, but the lack of per-physician differentiation leaves a substantial gap relative to individual adaptation at every scale.
@@ -93,7 +90,7 @@ The original TIES-MERGING achieves BLEU-4 6.7/10.1/13.8 (97.1--97.2\% of WebDoct
 Our Sign-Consistent Fusion (SCF) further improves upon TIES-MERGING, achieving the highest scores across all metrics and scales (BLEU-4 6.9/10.4/14.2).
 The full WebDoctor system, which combines SCF with identity-based DAR routing and physician-specific prompt prefixes, preserves the best performance.
 
-\subsubsection{LLM Judge Evaluation}
+\subsubsection*{LLM Judge Evaluation}
 Table~\ref{tab:ttft} presents the LLM evaluation results across model scales.
 The personalization gap between the Base Model and WebDoctor widens with model scale: from 1.4$\rightarrow$3.3 at 1B (+1.9 points) to 2.8$\rightarrow$4.5 at 7B (+1.7 points), suggesting that larger models have more expressive capacity to absorb physician-specific stylistic patterns.
 The Base Model receives a preference share of only 3--8\%, corroborating the automatic findings: physicians do not perceive generic outputs as matching their communication style at any scale.
@@ -124,7 +121,7 @@ LoRA-Merge-TIES & 3.1 $|$ 4.0 $|$ 4.3 & 3.7 $|$ 4.2 $|$ 4.4 & 3.9 $|$ 4.2 $|$ 4.
 \end{tabular}
 \end{table*}
 
-\subsubsection{DAR Routing Accuracy}
+\subsubsection*{DAR Routing Accuracy}
 We evaluate the DAR router's query-based retrieval accuracy on the test set.
 Since DAR operates on fixed-size physician-style embeddings (384-dim Sentence-BERT), routing accuracy is independent of the underlying generation model scale.
 With $m=1$, the router achieves a top-1 accuracy of 82.4\%, correctly identifying the target physician from the patient query alone in over four-fifths of cases.
@@ -133,9 +130,9 @@ Random routing (uniform selection among $K=120$ physicians in the evaluation sub
 The routing overhead is negligible (4.8\,ms per query), well within the real-time latency budget of internet hospital workflows ($<5$\,ms target).
 
 
-\subsection{Component Validation and Ablation Study}
+\subsection*{Component Validation and Ablation Study}
 
-\subsubsection{LoRA Rank and Data Efficiency}
+\subsubsection*{LoRA Rank and Data Efficiency}
 We vary the LoRA rank $r \in \{4, 8, 16, 32\}$ to assess the impact of adapter capacity on personalization quality across model scales.
 Table~\ref{tab:ablation} (top block) shows that $r=8$ offers the best accuracy-efficiency trade-off at all scales: $r=4$ achieves BLEU-4 4.9/9.5/13.4 with a 4.2\,MB adapter footprint, while $r=8$ reaches 6.9/10.4/14.2 with 6.8\,MB, and $r=16$ yields only a marginal gain (7.0/10.5/14.3) at nearly double the storage cost (13.1\,MB).
 $r=32$ provides no further improvement (5.5/10.5/14.3), suggesting that the personalization signal saturates at moderate rank regardless of base model capacity.
@@ -166,7 +163,7 @@ $\tau=0.30$ & 6.1 $|$ 9.5 $|$ 13.4 & 88.4 $|$ 91.3 $|$ 94.4 \\
 \end{tabular}
 \end{table}
 
-\subsubsection{SCF Performance Preservation}
+\subsubsection*{SCF Performance Preservation}
 Table~\ref{tab:scf_retention} reports the degradation of SCF performance as a function of the trim fraction $\tau$ and the number of merged adapters $K$, evaluated on the 3B model.
 At the optimal $\tau=0.20$ and the full physician pool ($K=766$), SCF achieves BLEU-4 10.4, outperforming TIES-MERGING (10.1) at the same $\tau$.
 Performance is robust across a range of $\tau$ values, degrading only at extremes ($\tau\le0.10$ or $\tau\ge0.40$).
@@ -223,11 +220,13 @@ SCF adapt.\ trim $\lambda$ & $\lambda=0.0$ & 6.7 $|$ 10.1 $|$ 13.8 & 3.2 $|$ 4.0
 \end{tabular}
 \end{table}
 
-\subsubsection{Ablation Study}
+\subsubsection*{Ablation Study}
 We ablate the key design choices of WebDoctor, reporting BLEU-4 and LLM-evaluated personalization scores (5-point scale) across all three model scales.
 Table~\ref{tab:ablation} (bottom block) presents the results.
 Removing the DAR router and relying solely on a generic prompt prefix (``w/o DAR'') causes a moderate drop across scales (BLEU-4 6.4/10.2/13.9, personalization 3.0/4.0/4.4), confirming that explicit physician identity conditioning via adaptive routing is important for stylistic fidelity.
 Removing both DAR and SCF (i.e., Shared LoRA) yields the largest degradation (BLEU-4 5.1/7.8/11.3, personalization 1.9/2.8/3.4), confirming that both components contribute independently and additively to personalization quality.
 Varying the SCF trim fraction confirms the optimal $\tau=0.20$: $\tau=0.10$ is overly aggressive (BLEU-4 5.8/9.3/13.1, retention 84.1/89.4/92.3\%), while $\tau=0.30$ retains more parameters but introduces noise (BLEU-4 6.1/9.5/13.4).
+
+
 
 

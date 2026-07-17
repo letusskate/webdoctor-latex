@@ -1,10 +1,8 @@
-% !TeX root = ../main.tex
+﻿\section*{Method}\label{section:design}
 
-\section{Method}\label{section:design}
+In this section, we present our three-stage personalized adaptation framework, illustrated in Fig.~\ref{fig:method-overview}. We begin with a formal problem formulation, then describe each component in detail: doctor-specific LoRA training via LLaMA-Factory~\cite{zheng2024llamafactory}, Doctor-Adaptive Routing (DAR) for dynamic adapter routing, and SCF for parameter fusion.
 
-In this section, we present our three-stage personalized adaptation framework, illustrated in Figure~\ref{fig:method-overview}. We begin with a formal problem formulation, then describe each component in detail: doctor-specific LoRA training via LLaMA-Factory~\cite{zheng2024llamafactory}, Doctor-Adaptive Routing (DAR) for dynamic adapter routing, and SCF for parameter fusion.
-
-\subsection{Problem Formulation}
+\subsection*{Problem Formulation}
 
 Let $\mathcal{D} = \{d_1, d_2, \ldots, d_K\}$ denote the set of $K$ physicians in an internet hospital, and let $\mathcal{M}_0$ denote a pre-trained base language model. Each physician $d_k$ is associated with a historical dialogue corpus $\mathcal{C}_k = \{(q_i^{(k)}, r_i^{(k)})\}_{i=1}^{N_k}$, where $q_i^{(k)}$ is a patient query and $r_i^{(k)}$ is the physician's corresponding response. Our objective is to construct a system that, given a new patient query $q$ directed to physician $d_k$, generates a candidate response $\hat{r}$ that (1) is clinically accurate, (2) reflects physician $d_k$'s personal linguistic style and departmental norms, and (3) complies with institutional regulations.
 
@@ -17,14 +15,14 @@ The key challenges are: (a) $N_k$ is typically small (tens to hundreds of exampl
 
 % \input{figures/method-overview}
 \begin{figure}[!t]
-\includegraphics[width=\textwidth]{figures/design.png}
-\caption{Overview of the three-stage personalized adaptation framework. Offline: Doctor-specific LoRA adapters are trained offline via LoRA fine-tuning using each physician's historical consultation records. Online: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. SCF fuses multiple doctor-specific adapters into a single unified deployment artifact with LoRAX, enabling efficient multi-physician serving through a single inference endpoint.}
+\centering
+\includegraphics[width=0.8\textwidth]{figures/design.pdf}
+\caption{Overview of the three-stage personalized adaptation framework. Offline: Doctor-specific LoRA adapters are trained offline via LoRA fine-tuning using each physician's historical consultation records. Online: At inference time, the DAR router dynamically selects the appropriate adapter based on the patient query and target physician identity. SCF fuses multiple doctor-specific adapters into a single unified deployment artifact with LoRAX, enabling efficient multi-physician serving.}
 \label{fig:method-overview}
 \end{figure}   
-\unskip
 
 
-\subsection{Doctor-Specific LoRA Training}
+\subsection*{Doctor-Specific LoRA Training}
 
 We adopt Low-Rank Adaptation (LoRA)~\cite{hu2021lora} as our parameter-efficient fine-tuning strategy. For each physician $d_k$, we train a LoRA adapter that modifies the attention projection matrices of $\mathcal{M}_0$. Specifically, for a pre-trained weight matrix $W \in \mathbb{R}^{d \times d}$, LoRA constrains its update to a low-rank decomposition:
 \begin{equation}
@@ -39,7 +37,7 @@ We adopt LoRA fine-tuning based on LLaMA-Factory~\cite{zheng2024llamafactory} (v
 
 To prevent overfitting given the limited per-physician data, we apply the following regularization strategies: (1) a small LoRA rank $r \in \{4, 8, 16\}$; (2) dropout on the LoRA matrices with rate $\alpha = 0.1$; and (3) early stopping based on validation perplexity on a held-out subset of each physician's dialogues. Each trained adapter $\Delta \Theta_k$ is serialized to disk as a compact checkpoint (typically $<10$ MB), enabling efficient storage and loading.
 
-\subsection{Doctor-Adaptive Routing (DAR)}
+\subsection*{Doctor-Adaptive Routing (DAR)}
 
 At inference time, the system must select the appropriate LoRA adapter for the target physician. Let $e_k \in \mathbb{R}^{384}$ denote a pre-computed embedding vector encoding physician $d_k$'s communication style profile (derived from their historical responses via Sentence-BERT~\cite{reimers2019sentence}). For a new patient query $q$, we compute its embedding $e_q$ using the same encoder. The DAR router defines a scoring function:
 
@@ -69,7 +67,7 @@ The selected adapter(s) are then applied to the base model for generation. In pr
 \end{enumerate}
 The augmented routing context $C_k$ for physician $d_k$ and query $q$ is assembled as: $C_k = \{ \text{dept\_rules}, \text{hospital\_policy}, \text{history}_{N}, \text{RAG\_top}_{t} \}$. This context is prepended to the prompt template before generation, ensuring all regulatory, institutional, and personal knowledge constraints are satisfied simultaneously.
 
-\subsection{SCF for Parameter Fusion}
+\subsection*{SCF for Parameter Fusion}
 
 While per-physician LoRA adapters provide maximal personalization, serving $K$ separate adapters incurs linear storage and loading costs. SCF fuses multiple adapters into a single merged artifact while minimizing interference~\cite{yadavTIESMergingResolvingInterference2023a}. Formally, let $\Delta_k \in \mathbb{R}^{d}$ denote the flattened LoRA parameter delta for physician $d_k$. SCF proceeds in three stages:
 
@@ -94,4 +92,7 @@ When $\eta=1$, all deltas contribute equally; as $\eta \to \infty$, only the lar
 \end{equation}
 
 The merged adapter is applied as $\Theta^{\text{(merged)}} = \Theta_0 + \Delta^{\text{(merged)}}$. Default hyperparameters are $\eta=1.0$, $\lambda=0.5$, and $\tau=0.20$, with sensitivity analyzed in Section~\ref{section:evaluation}.
+
+
+
 

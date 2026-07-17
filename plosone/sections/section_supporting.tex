@@ -1,11 +1,8 @@
-% !TeX root = ../main.tex
-\appendix
-
-%%%%%%%%%%%%%%%%%%%% my appendix%%%%%%%%%%%%%%%%%%%%%
+﻿\section*{Supporting information}
 
 % This appendix provides supplementary details on the training configuration, human evaluation protocol, and additional experimental results that support the main text.
 
-\section{LoRA Training Hyperparameters}
+\subsection*{LoRA Training Hyperparameters}
 
 Table~\ref{tab:hyperparams} lists the complete hyperparameter configuration used for doctor-specific LoRA training via LLaMA-Factory~\cite{zheng2024llamafactory}.
 
@@ -36,7 +33,7 @@ Hardware & 8 $\times$ NVIDIA H20-3e (141GB) \\
 \end{tabularx}
 \end{table}
 
-\section{LLM Judge Evaluation Protocol}
+\subsection*{LLM Judge Evaluation Protocol}
 
 We adopt Qwen3.6-35B as an automated judge following the LLM-as-a-Judge paradigm~\cite{NEURIPS2023_91f18a12}. For each test query, the judge receives the generated response together with the target physician's department, specialty description, and three representative historical responses as context. The judge evaluates each response on three dimensions using 5-point Likert scales:
 
@@ -49,7 +46,7 @@ We adopt Qwen3.6-35B as an automated judge following the LLM-as-a-Judge paradigm
 For preference assessment, the judge performs pairwise comparisons between all method pairs. Self-consistency is evaluated by repeating each judgment three times with different prompt orderings; the majority vote is taken as the final preference. The judge achieves a self-consistency rate of 94.2\%, indicating high reliability. 
 % We note that Qwen3.6-35B belongs to the same model family as one of our evaluated base models (Qwen-2.5-7B-Instruct), which may introduce a self-preference bias. To mitigate this, we evaluate all methods---including the Qwen-2.5-7B-based variants---under identical judge configurations and report relative improvements rather than absolute scores as the primary comparison metric.
 
-\section{SCF Sensitivity Analysis}
+\subsection*{SCF Sensitivity Analysis}
 
 Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF performance to the trim fraction $\tau$ with $K=120$. Performance is robust for $\tau \in [0.15, 0.30]$ and degrades gracefully as $K$ increases from 20 to 120, suggesting that the framework scales well to larger physician pools.
 
@@ -57,7 +54,7 @@ Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF performance to th
 \caption{SCF sensitivity to trim fraction $\tau$ ($K=120$, 3B model). \label{tab:scf-sensitivity}}
 \begin{tabularx}{\textwidth}{lCC}
 \toprule
-\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} \\
+\textbf{Trim fraction $\tau$} & \textbf{Merged BLEU-4} &\textbf{Retention (\%)} \\
 \midrule
 0.10 & 9.3 & 89.4 \\
 0.15 & 10.2 & 98.4 \\
@@ -70,15 +67,14 @@ Table~\ref{tab:scf-sensitivity} reports the sensitivity of SCF performance to th
 \end{table}
 
 
-\section{De-identification Pipeline Details}
+\subsection*{De-identification Pipeline Details}
 
 The de-identification pipeline consists of three sequential stages:
 \begin{enumerate}
 \item \textbf{Rule-based filtering}: Regular expressions identify and replace structured identifiers including Chinese national ID numbers, phone numbers, email addresses, physical addresses, and hospital record numbers.
 \item \textbf{NER-based detection}: A fine-tuned BERT-based NER model identifies contextual identifiers (person names, hospital names, dates, locations) and replaces them with type-consistent placeholders (e.g., \texttt{[\,PERSON\,]}, \texttt{[\,HOSPITAL\,]}, \texttt{[\,DATE\,]}).
 \item \textbf{Manual review}: Two independent annotators review all de-identified records. Disagreements are resolved by a third annotator.
-% The final de-identification achieves 98.7\% recall and 97.2\% precision.
+ recall and 97.2\% precision.
 \end{enumerate}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%% template%%%%%%%%%%%%%%%%%%%%%%%%%%
