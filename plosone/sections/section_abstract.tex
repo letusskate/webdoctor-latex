@@ -2,6 +2,10 @@
 
 Internet hospitals generate vast amounts of doctor-patient dialogues, yet existing LLM-based assistants produce generic, depersonalized outputs that fail to capture individual physicians' communication styles, leading to limited real-world adoption in the outpatient process of internet hospitals. We address this gap by proposing WebDoctor, a three-stage personalized LLM outpatient assistant framework. First, doctor-specific low-rank adaptation modules are trained via LoRA fine-tuning on each physician's consultation records, producing compact adapters that encode individual response patterns. Second, Doctor-Adaptive Routing (DAR) dynamically selects the appropriate adapter at inference time through identity-based or query-based retrieval. Third, Sign-Consistent Fusion (SCF), an interference-aware merging technique, consolidates multiple adapters into a unified deployment artifact while preserving individual adapter performance. We construct a real-world internet hospital doctor-patient dialogue (IHDPD) dataset spanning 121 clinical departments and 766 physicians. Evaluations with LLaMA-3.2-1B/3B and Qwen-2.5-7B demonstrate significant improvements over baselines. WebDoctor achieves BLEU-4 scores of 6.9/10.4/14.2 and personalization ratings of 3.3/4.2/4.5 at 1B/3B/7B, substantially above the corresponding base models (BLEU-4: 3.2/5.1/8.7; personalization: 1.4/2.1/2.8). WebDoctor offers a practical pathway toward trustworthy, physician-centered AI assistance in clinical workflows.
 
+% \section*{Author summary}
+% Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eget porta erat. Morbi consectetur est vel gravida pretium. Suspendisse ut dui eu ante cursus gravida non sed sem. Nullam sapien tellus, commodo id velit id, eleifend volutpat quam. Phasellus mauris velit, dapibus finibus elementum vel, pulvinar non tellus. Nunc pellentesque pretium diam, quis maximus dolor faucibus id. Nunc convallis sodales ante, ut ullamcorper est egestas vitae. Nam sit amet enim ultrices, ultrices elit pulvinar, volutpat risus.
+
+
 
 \clearpage
 \newgeometry{top=0.85in,left=1in,right=1in,footskip=0.75in}
